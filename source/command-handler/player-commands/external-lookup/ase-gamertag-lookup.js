@@ -26,7 +26,7 @@ module.exports = {
         headers: { 'Authorization': token, 'Content-Type': 'application/json' }
       });
 
-      const tasks = response.data.data.services.map(async service => {
+      await Promise.all(response.data.data.services.map(async service => {
         if (!platforms.includes(service.details.folder_short) || service.status !== 'active') return;
 
         const url = `https://api.nitrado.net/services/${service.id}/gameservers/games/players`;
@@ -40,9 +40,7 @@ module.exports = {
             counter++;
           };
         });
-      });
-
-      await Promise.all(tasks)
+      }));
     }
 
     const verification = async (token) => {
