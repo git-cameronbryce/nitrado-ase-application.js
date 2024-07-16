@@ -1,3 +1,4 @@
+const { invalidToken } = require('../../utilities/embeds');
 const { EmbedBuilder } = require('@discordjs/builders');
 const { SlashCommandBuilder } = require('discord.js');
 const { supabase } = require('../../script');
@@ -61,7 +62,9 @@ module.exports = {
         response.status === 200 && scopes.includes('service')
           && await getServiceInformation(token);
 
-      } catch (error) { console.log('Invalid Token'), console.log(error) };
+      } catch (error) {
+        await interaction.followUp({ embeds: [invalidToken()] });
+      };
     }
 
     const { data } = await supabase
