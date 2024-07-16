@@ -22,26 +22,24 @@ module.exports = {
     let counter = 0;
     const getServiceInformation = async (token) => {
       const url = 'https://api.nitrado.net/services';
-      const response = await axios.get(url,
-        { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
+      const response = await axios.get(url, {
+        headers: { 'Authorization': token, 'Content-Type': 'application/json' }
+      });
 
       const tasks = response.data.data.services.map(async service => {
         if (!platforms.includes(service.details.folder_short) || service.status !== 'active') return;
 
-        try {
-          const url = `https://api.nitrado.net/services/${service.id}/gameservers/games/players`;
-          const response = await axios.get(url,
-            { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
+        const url = `https://api.nitrado.net/services/${service.id}/gameservers/games/players`;
+        const response = await axios.get(url,
+          { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
 
-          response.data.data.players.forEach(async player => {
-            if (player.name.toLowerCase().includes(input.username.toLowerCase()) && counter <= 5) {
-              const unixTimestamp = Number(Math.floor(new Date("2024-05-24T08:00:14").getTime() / 1000));
-              output += `${player.online ? `\`🟢\` \`Player Online\`` : `\`🟠\` \`Player Offline\``}\n\`🔗\` ${player.id.slice(0, 26)}...\n\`🔗\` <t:${unixTimestamp}:F>\n\`🔗\` ${player.name}\n\n`;
-              counter++;
-            };
-          });
-
-        } catch (error) { console.log(error) };
+        response.data.data.players.forEach(async player => {
+          if (player.name.toLowerCase().includes(input.username.toLowerCase()) && counter <= 5) {
+            const unixTimestamp = Number(Math.floor(new Date("2024-05-24T08:00:14").getTime() / 1000));
+            output += `${player.online ? `\`🟢\` \`Player Online\`` : `\`🟠\` \`Player Offline\``}\n\`🔗\` ${player.id.slice(0, 26)}...\n\`🔗\` <t:${unixTimestamp}:F>\n\`🔗\` ${player.name}\n\n`;
+            counter++;
+          };
+        });
       });
 
       await Promise.all(tasks)
