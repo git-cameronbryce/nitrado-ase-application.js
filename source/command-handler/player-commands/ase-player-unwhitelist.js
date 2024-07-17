@@ -20,6 +20,8 @@ module.exports = {
       guild: interaction.guild.id
     };
 
+    input.username = input.username.includes('#') ? input.username.replace('#', '') : input.username;
+
     const getServiceInformation = async (token) => {
       const url = 'https://api.nitrado.net/services';
       const response = await axios.get(url,
