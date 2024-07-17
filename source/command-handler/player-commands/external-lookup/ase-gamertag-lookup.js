@@ -1,7 +1,10 @@
+const { invalidToken } = require('../../../utilities/embeds');
 const { EmbedBuilder } = require('@discordjs/builders');
 const { SlashCommandBuilder } = require('discord.js');
 const { supabase } = require('../../../script');
 const axios = require('axios');
+
+const platforms = ['arkxb'];
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -11,36 +14,34 @@ module.exports = {
 
   run: async ({ interaction }) => {
     await interaction.deferReply({ ephemeral: false });
-    const platforms = ['arkxb'];
 
     const input = {
       username: interaction.options.getString('username'),
       guild: interaction.guild.id
     };
 
-    let output = '';
-    let counter = 0;
+    let output = '', counter = 0;
     const getServiceInformation = async (token) => {
       const url = 'https://api.nitrado.net/services';
       const response = await axios.get(url, {
         headers: { 'Authorization': token, 'Content-Type': 'application/json' }
       });
 
-      await Promise.all(response.data.data.services.map(async service => {
-        if (!platforms.includes(service.details.folder_short) || service.status !== 'active') return;
+      await Promise.all(
+        response.data.data.services.map(async service => {
+          if (!platforms.includes(service.details.folder_short) || service.status !== 'active') return;
 
-        const url = `https://api.nitrado.net/services/${service.id}/gameservers/games/players`;
-        const response = await axios.get(url,
-          { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
+          const url = `https://api.nitrado.net/services/${service.id}/gameservers/games/players`;
+          const response = await axios.get(url,
+            { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
 
-        response.data.data.players.forEach(async player => {
-          if (player.name.toLowerCase().includes(input.username.toLowerCase()) && counter <= 5) {
-            const unixTimestamp = Number(Math.floor(new Date("2024-05-24T08:00:14").getTime() / 1000));
-            output += `${player.online ? `\`🟢\` \`Player Online\`` : `\`🟠\` \`Player Offline\``}\n\`🔗\` ${player.id.slice(0, 26)}...\n\`🔗\` <t:${unixTimestamp}:F>\n\`🔗\` ${player.name}\n\n`;
-            counter++;
-          };
-        });
-      }));
+          response.data.data.players.forEach(async player => {
+            if (player.name.toLowerCase().includes(input.username.toLowerCase()) && counter <= 5) {
+              const unixTimestamp = Number(Math.floor(new Date("2024-05-24T08:00:14").getTime() / 1000));
+              output += `${player.online ? `\`🟢\` \`Player Online\`` : `\`🟠\` \`Player Offline\``}\n\`🔗\` ${player.id.slice(0, 26)}...\n\`🔗\` <t:${unixTimestamp}:F>\n\`🔗\` ${player.name}\n\n`, counter++;
+            };
+          });
+        }));
     }
 
     const verification = async (token) => {
@@ -53,7 +54,9 @@ module.exports = {
         response.status === 200 && scopes.includes('service')
           && await getServiceInformation(token);
 
-      } catch (error) { console.log('Invalid Token'), console.log(error) };
+      } catch (error) {
+        await interaction.followUp({ embeds: [invalidToken()] });
+      };
     }
 
     const { data } = await supabase
