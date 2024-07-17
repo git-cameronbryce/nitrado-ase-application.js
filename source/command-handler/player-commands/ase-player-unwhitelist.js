@@ -7,8 +7,8 @@ const axios = require('axios');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('ase-player-unwhitelist')
-    .setDescription('...')
-    .addStringOption((option) => option.setName('username').setDescription('...').setRequired(true)),
+    .setDescription('Performs an in-game player action.')
+    .addStringOption(option => option.setName('username').setDescription('Selected action will be performed on given tag.').setRequired(true)),
 
   run: async ({ interaction }) => {
     await interaction.deferReply({ ephemeral: false });

@@ -7,8 +7,8 @@ const axios = require('axios');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('ase-player-ban')
-    .setDescription('...')
-    .addStringOption((option) => option.setName('username').setDescription('...').setRequired(true))
+    .setDescription('Performs an in-game player action.')
+    .addStringOption(option => option.setName('username').setDescription('Selected action will be performed on given tag.').setRequired(true))
     .addStringOption(option => option.setName('reason').setDescription('Required to submit ban action.').setRequired(true)
       .addChoices({ name: 'Breaking Rules', value: 'breaking rules' }, { name: 'Cheating', value: 'cheating' }, { name: 'Behavior', value: 'behavior' }, { name: 'Meshing', value: 'meshing' }, { name: 'Other', value: 'other reasons' })),
 
