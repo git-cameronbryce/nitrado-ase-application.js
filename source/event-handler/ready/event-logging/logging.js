@@ -14,14 +14,15 @@ module.exports = async (client) => {
       const response = await axios.get(url,
         { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
 
-      // if (!document.data().forum?.admin) return;
+      if (!document.data().forum?.admin) return;
       Object.keys(document.data().forum.admin) &&
         await adminExtractionLogic(document, service, response.data, client);
 
-      // if (!document.data().forum?.chat) return;
+      if (!document.data().forum?.chat) return;
       Object.keys(document.data().forum.chat) &&
         await chatExtractionLogic(document, service, response.data, client);
 
+      if (!document.data().forum?.join) return;
       Object.keys(document.data().forum.join) &&
         await joinExtractionLogic(document, service, response.data, client);
     };
