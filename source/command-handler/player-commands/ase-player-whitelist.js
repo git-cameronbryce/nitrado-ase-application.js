@@ -1,7 +1,7 @@
 const { invalidToken } = require('../../utilities/embeds');
 const { EmbedBuilder } = require('@discordjs/builders');
 const { SlashCommandBuilder } = require('discord.js');
-const { supabase } = require('../../script');
+const { db } = require('../../script');
 const axios = require('axios');
 
 module.exports = {
@@ -67,19 +67,10 @@ module.exports = {
       };
     }
 
-    const { data } = await supabase
-      .from('ase-configuration')
-      .select('guild, nitrado').eq('guild', input.guild)
-
-    data?.forEach(async (document) => {
-      if (document.guild && document.nitrado) {
-        const tokens = Object.values(document.nitrado);
-        tokens.map(token => verification(token));
-      }
-    });
+    // Obtain object snapshot, convert to an array. 
+    const reference = (await db.collection('ase-configuration').doc(input.guild).get()).data();
+    Object.values(reference.nitrado)?.map(async token => verification(token));
   },
 
-  options: {
-
-  },
+  options: {},
 };
