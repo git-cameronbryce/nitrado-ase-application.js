@@ -14,10 +14,10 @@ const chatExtractionLogic = async (document, service, response, client) => {
       const dateTimeString = `${datePart.replace(/\./g, '-')}T${timePart.replace(/\./g, ':')}`;
       const unix = Math.floor(new Date(dateTimeString).getTime() / 1000);
 
-      pattern += `<t:${unix}:f>\n**Player Identity Information**\n[${gamertag}]: ${username} \n${message} \n\n`;
+      pattern += `<t:${unix}:f>\n**Player Identity Information**\n[${gamertag}]: ${username}\n${message}\n\n`;
       if (!data.has(pattern)) {
         data.add(pattern), counter++;
-        unique += `<t:${unix}:f>\n**Player Identity Information**\n[${gamertag}]: ${username} \n${message} \n\n`;
+        unique += `<t:${unix}:f>\n**Player Identity Information**\n[${gamertag}]: ${username}\n${message}\n\n`;
       };
     };
 
