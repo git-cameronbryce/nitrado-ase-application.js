@@ -28,11 +28,13 @@ module.exports = async (client) => {
     };
 
     const getFilePathInformation = async (token, document, service, { game_specific: { path } }) => {
-      const url = `https://api.nitrado.net/services/${service.id}/gameservers/file_server/download?file=${path}/ShooterGame/Saved/Logs/ShooterGame.log`;
-      const response = await axios.get(url,
-        { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
+      try {
+        const url = `https://api.nitrado.net/services/${service.id}/gameservers/file_server/download?file=${path}/ShooterGame/Saved/Logs/ShooterGame.log`;
+        const response = await axios.get(url,
+          { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
 
-      response.status === 200 && getExtractedFilePath(token, document, service, response.data.data.token);
+        response.status === 200 && getExtractedFilePath(token, document, service, response.data.data.token);
+      } catch (error) { null };
     };
 
     const getServiceInformation = async (token, document) => {
@@ -69,6 +71,6 @@ module.exports = async (client) => {
     })
     setTimeout(loop, 15000);
   }
-  loop().then(() => console.log('Loop started:'));
+  // loop().then(() => console.log('Loop started:'));
 };
 
