@@ -2,32 +2,11 @@ const { ModalBuilder, ActionRowBuilder, TextInputBuilder } = require('@discordjs
 const { Events, TextInputStyle, ButtonStyle, EmbedBuilder, ChannelType } = require('discord.js');
 const { db } = require('../../../../script');
 const { default: axios } = require('axios');
-const { ButtonKit } = require('commandkit');
 
 const platforms = ['arkxb'];
 
 module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {
-    if (interaction.isButton()) {
-
-      if (interaction.customId === 'ase-manual-setup') {
-        const modal = new ModalBuilder()
-          .setCustomId('ase-modal-manual-setup')
-          .setTitle('Gameserver Integration Process');
-
-        const modalTokenRequired = new TextInputBuilder()
-          .setCustomId('ase-gameserver-identifier-required').setLabel('Required Gameserver Identifier').setMinLength(8).setMaxLength(8)
-          .setStyle(TextInputStyle.Short)
-          .setRequired(true);
-
-        const modalRequiredParameter = new ActionRowBuilder()
-          .addComponents(modalTokenRequired);
-
-        modal.addComponents(modalRequiredParameter);
-        await interaction.showModal(modal);
-      }
-    }
-
     if (interaction.isModalSubmit()) {
       if (interaction.customId === 'ase-modal-manual-setup') {
         await interaction.deferReply({ ephemeral: false });
@@ -106,26 +85,16 @@ module.exports = (client) => {
             })
           );
 
-          const killThread = await interaction.client.channels.fetch(reference.forum.kill).then(forum =>
-            forum.threads.create({
-              name: `${gameserver.name} - ${gameserver.id}`,
-              type: ChannelType.PrivateThread,
-              message: { embeds: [embed] }
-            })
-          );
-
           const data = {
             'online': { [gameserver.id]: { thread: onlineThread.id, message: onlineThread.lastMessageId } },
             'admin': { [gameserver.id]: adminThread.id },
             'chat': { [gameserver.id]: chatThread.id },
-            'join': { [gameserver.id]: joinThread.id },
-            'kill': { [gameserver.id]: killThread.id }
+            'join': { [gameserver.id]: joinThread.id }
           };
 
           await db.collection('ase-configuration').doc(interaction.guild.id).set(data, { merge: true })
             .then(() => { console.log('Database Finished:') });
         });
-
       }
     }
   })
