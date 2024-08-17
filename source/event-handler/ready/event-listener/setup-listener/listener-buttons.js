@@ -18,7 +18,6 @@ module.exports = (client) => {
         const modalTokenOptional = new TextInputBuilder()
           .setCustomId('ase-nitrado-token-optional').setLabel('Optional Nitrado Token').setMinLength(25).setMaxLength(100)
           .setPlaceholder('...oAg66TcQYUnYXBQn17A161-N86cN5jWDp7')
-
           .setStyle(TextInputStyle.Short)
           .setRequired(false);
 
