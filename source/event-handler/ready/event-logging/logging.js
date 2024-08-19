@@ -14,17 +14,17 @@ module.exports = async (client) => {
       const response = await axios.get(url,
         { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
 
-      if (!document.data().forum?.admin) return;
-      Object.keys(document.data().forum.admin) &&
+      if (document.data().forum?.admin && Object.keys(document.data().forum.admin).length) {
         await adminExtractionLogic(document, service, response.data, client);
+      }
 
-      if (!document.data().forum?.chat) return;
-      Object.keys(document.data().forum.chat) &&
+      if (document.data().forum?.chat && Object.keys(document.data().forum.chat).length) {
         await chatExtractionLogic(document, service, response.data, client);
+      }
 
-      if (!document.data().forum?.join) return;
-      Object.keys(document.data().forum.join) &&
+      if (document.data().forum?.join && Object.keys(document.data().forum.join).length) {
         await joinExtractionLogic(document, service, response.data, client);
+      }
     };
 
     const getFilePathInformation = async (token, document, service, { game_specific: { path } }) => {
@@ -71,6 +71,6 @@ module.exports = async (client) => {
     })
     setTimeout(loop, 15000);
   }
-  // loop().then(() => console.log('Loop started:'));
+  loop().then(() => console.log('Loop started:'));
 };
 
