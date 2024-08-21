@@ -18,7 +18,6 @@ module.exports = (client) => {
 
         let gameservers = [];
         const getServiceInformation = async (token) => {
-          if (token !== 'Odz6swervAk7ulClVGoRycNQ7XpVBdfqXU66aUQgFvj6MuWJMiXlT1bbsl6Rrv93D3jtvoKCdnwv7OX6ltgauMLM5fD7sj65Mi92') return
           try {
             const url = `https://api.nitrado.net/services/${input.identifier}/gameservers`;
             const response = await axios.get(url,
