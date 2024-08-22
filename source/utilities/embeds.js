@@ -23,4 +23,18 @@ const loggingInstallation = () => {
     .setColor(0x2ecc71);
 }
 
-module.exports = { statusInstallation, loggingInstallation, invalidToken, };
+const serverRestartAuditLogging = (identifier, success) => {
+  return new EmbedBuilder()
+    .setDescription(`**Gameserver Audit Logging**\nGameserver action completed.\nRestarting \`${success}\` of \`${success}\` servers.\n\n> ||<@${identifier}>||`)
+    .setFooter({ text: 'Note: Contact support if issues persist.' })
+    .setColor(0x2ecc71);
+}
+
+const serverStopAuditLogging = (identifier, success) => {
+  return new EmbedBuilder()
+    .setDescription(`**Gameserver Audit Logging**\nGameserver action completed.\nStopping \`${success}\` of \`${success}\` servers.\n\n> ||<@${identifier}>||`)
+    .setFooter({ text: 'Note: Contact support if issues persist.' })
+    .setColor(0x2ecc71);
+}
+
+module.exports = { statusInstallation, loggingInstallation, invalidToken, serverRestartAuditLogging, serverStopAuditLogging };
