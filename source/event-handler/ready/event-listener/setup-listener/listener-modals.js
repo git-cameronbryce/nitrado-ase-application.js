@@ -1,5 +1,5 @@
 const { ActionRowBuilder, EmbedBuilder } = require('@discordjs/builders');
-const { loggingInstallation, statusInstallation } = require('../../../../utilities/embeds');
+const { loggingInstallation, statusInstallation, autoMonitoringInstallation } = require('../../../../utilities/embeds');
 const { Events, ButtonStyle, ChannelType } = require('discord.js');
 const { db } = require('../../../../script');
 const { ButtonKit } = require('commandkit');
@@ -90,13 +90,25 @@ module.exports = (client) => {
               type: ChannelType.GuildCategory,
             });
 
+            const manageGamesavesChannel = await interaction.guild.channels.create({
+              name: '🔗│𝗠anage-𝗚amesaves',
+              type: ChannelType.GuildText,
+              parent: statusCategory
+            });
+
+            const autoMonitoringChannel = await interaction.guild.channels.create({
+              name: '🔗│𝗔uto-𝗠onitoring',
+              type: ChannelType.GuildText,
+              parent: statusCategory
+            });
+
             const statusChannel = await interaction.guild.channels.create({
               name: '🔗│𝗦erver-𝗦tatus',
               type: ChannelType.GuildText,
               parent: statusCategory
             });
 
-            const commandsHereChannel = await interaction.guild.channels.create({
+            const commandsChannel = await interaction.guild.channels.create({
               name: '🔗│𝗖ommands',
               type: ChannelType.GuildText,
               parent: statusCategory
@@ -107,8 +119,20 @@ module.exports = (client) => {
               type: ChannelType.GuildCategory,
             });
 
+            const adminProtectionChannel = await interaction.guild.channels.create({
+              name: '🔐│𝗔dmin-𝗣rotection',
+              type: ChannelType.GuildText,
+              parent: gameProtectionCategory
+            });
+
             const dupeProtectionChannel = await interaction.guild.channels.create({
               name: '🔐│𝗗upe-𝗣rotection',
+              type: ChannelType.GuildText,
+              parent: gameProtectionCategory
+            });
+
+            const altProtectionChannel = await interaction.guild.channels.create({
+              name: '🔐│𝗔lt-𝗣rotection',
               type: ChannelType.GuildText,
               parent: gameProtectionCategory
             });
@@ -118,14 +142,20 @@ module.exports = (client) => {
               type: ChannelType.GuildCategory,
             });
 
+            const monitoringAuditChannel = await interaction.guild.channels.create({
+              name: '📄│𝗠onitor-𝗔udits',
+              type: ChannelType.GuildText,
+              parent: auditLoggingCategory
+            });
+
             const playerAuditChannel = await interaction.guild.channels.create({
-              name: '📄│𝗣layer-𝗖ommands',
+              name: '📄│𝗣layer-𝗔udits',
               type: ChannelType.GuildText,
               parent: auditLoggingCategory
             });
 
             const serverAuditChannel = await interaction.guild.channels.create({
-              name: '📄│𝗦erver-𝗖ommands',
+              name: '📄│𝗦erver-𝗔udits',
               type: ChannelType.GuildText,
               parent: auditLoggingCategory
             });
@@ -159,56 +189,67 @@ module.exports = (client) => {
               parent: gameLoggingCategory
             });
 
-            const killForumChannel = await interaction.guild.channels.create({
-              name: '📑│𝗞ill-𝗟ogging',
-              type: ChannelType.GuildForum,
-              parent: gameLoggingCategory
-            });
-
             const installation = await interaction.guild.channels.create({
               name: '📑│𝗜nstallation',
               type: ChannelType.GuildText,
               parent: gameLoggingCategory
             });
 
+            const autoMonitoringPrimaryButton = new ButtonKit()
+              .setCustomId('ase-connect-service')
+              .setLabel('Connect Service')
+              .setStyle(ButtonStyle.Success);
 
+            const autoMonitoringSecondaryyButton = new ButtonKit()
+              .setCustomId('ase-remove-service')
+              .setLabel('Remove Service')
+              .setStyle(ButtonStyle.Secondary);
+
+            const autoMonitoringButtonRow = new ActionRowBuilder()
+              .addComponents(autoMonitoringPrimaryButton, autoMonitoringSecondaryyButton);
+
+            const autoMonitoringMessage = await autoMonitoringChannel.send({ embeds: [autoMonitoringInstallation()], components: [autoMonitoringButtonRow] });
             const statusMessage = await statusChannel.send({ embeds: [statusInstallation()] });
 
-            const automatic = new ButtonKit()
+            const loggingPrimaryButton = new ButtonKit()
               .setCustomId('ase-automatic-setup')
               .setLabel('Automatic Setup')
               .setStyle(ButtonStyle.Success)
               .setDisabled(false);
 
-            const manual = new ButtonKit()
+            const loggingSecondaryButton = new ButtonKit()
               .setCustomId('ase-manual-setup')
               .setLabel('Manual Setup')
               .setStyle(ButtonStyle.Secondary)
               .setDisabled(false);
 
-            const row = new ActionRowBuilder()
-              .addComponents(automatic, manual);
+            const loggingButtonRow = new ActionRowBuilder()
+              .addComponents(loggingPrimaryButton, loggingSecondaryButton);
 
-            await installation.send({ embeds: [loggingInstallation()], components: [row] });
+            await installation.send({ embeds: [loggingInstallation()], components: [loggingButtonRow] });
 
             const data = {
+              monitoring: {
+                channel: autoMonitoringChannel.id,
+                message: autoMonitoringMessage.id,
+                restarts: 0
+              },
               status: {
                 channel: statusChannel.id,
                 message: statusMessage.id
               },
               audits: {
-                player: playerAuditChannel.id,
-                server: serverAuditChannel.id
+                monitoring: { channel: monitoringAuditChannel.id },
+                player: { channel: playerAuditChannel.id },
+                server: { channel: serverAuditChannel.id }
               },
               forum: {
                 online: onlineForumChannel.id,
                 admin: adminForumChannel.id,
                 chat: chatForumChannel.id,
                 join: joinForumChannel.id,
-                kill: killForumChannel.id
               },
             }
-
             await db.collection('ase-configuration').doc(input.guild)
               .set(data, { merge: true });
           });
