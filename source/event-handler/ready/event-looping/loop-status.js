@@ -3,6 +3,7 @@ const { ButtonStyle, EmbedBuilder } = require('discord.js');
 const { db } = require('../../../script');
 const { ButtonKit } = require('commandkit');
 const axios = require('axios');
+const { FieldValue } = require('firebase-admin/firestore');
 
 module.exports = async (client) => {
   const loop = async () => {
@@ -16,7 +17,7 @@ module.exports = async (client) => {
 
       await Promise.all(
         response.data.data.services.map(async (service) => {
-          if (!platforms.includes(service.details.folder_short)) return;
+          if (!platforms.includes(service.details.folder_short) || service.status !== 'active') return;
 
           const { suspend_date } = service;
 
@@ -62,7 +63,8 @@ module.exports = async (client) => {
       );
     };
 
-    const verification = async (token, servers, current, maximum, counter) => {
+    const verification = async (token, servers, current, maximum, counter, document) => {
+
       try {
         const url = 'https://oauth.nitrado.net/token';
         const response = await axios.get(url, {
@@ -74,30 +76,26 @@ module.exports = async (client) => {
           await getServiceInformation(token, servers, current, maximum, counter);
         }
       } catch (error) {
-        console.log('Nitrado token no longer valid...');
-      }
+        error.response.data.message === 'Access token not valid.' && null;
+      };
     };
 
     const reference = await db.collection('ase-configuration').get();
 
     await Promise.all(
-      reference.docs.map(async (document) => {
+      reference.docs.map(async document => {
+        let current = { value: 0 }, maximum = { value: 0 }, counter = { value: 0 };
         const { nitrado, status } = document.data();
         const servers = [];
-        let current = { value: 0 };
-        let maximum = { value: 0 };
-        let counter = { value: 0 };
 
         await Promise.all(
-          Object.values(nitrado).map(async (token) => verification(token, servers, current, maximum, counter))
+          Object.values(nitrado).map(async (token) => verification(token, servers, current, maximum, counter, document))
         );
 
         try {
-          const channel = await client.channels.fetch(status?.channel);
-          const message = await channel.messages.fetch(status?.message);
+          const channel = await client.channels.fetch(status.channel);
+          const message = await channel.messages.fetch(status.message);
 
-          // Sort servers by player current count.
-          // Build the output string from the sorted servers.
           servers.sort((a, b) => b.playerCurrent - a.playerCurrent);
           const output = servers.map((server) => server.output).join('');
 
@@ -114,23 +112,17 @@ module.exports = async (client) => {
           const row = new ActionRowBuilder().addComponents(cluster, support);
 
           const embed = new EmbedBuilder()
-            .setDescription(
-              `${output}**Cluster Player Count**\n \`🌐\` \`(${current.value}/${maximum.value})\`\n\n<t:${Math.floor(
-                Date.now() / 1000
-              )}:R>\n**[Partnership & Information](https://nitra.do/obeliskdevelopment)**\nConsider using our partnership link to purchase your gameservers, it will help fund development.`
-            )
+            .setDescription(`${output}**Cluster Player Count**\n \`🌐\` \`(${current.value}/${maximum.value})\`\n\n<t:${Math.floor(Date.now() / 1000)}:R>\n**[Partnership & Information](https://nitra.do/obeliskdevelopment)**\nConsider using our partnership link to purchase your gameservers, it will help fund development.`)
             .setFooter({ text: 'Note: Contact support if issues persist.' })
             .setImage('https://i.imgur.com/2ZIHUgx.png')
             .setColor(0x2ecc71);
 
           await message.edit({ embeds: [embed], components: [row] });
-        } catch (error) {
-          console.log('Cannot edit status page...');
-        }
+        } catch (error) { if (error.code === 10003) { null } };
       })
     );
 
-    setTimeout(loop, 15000);
+    setTimeout(loop, 60000);
   };
   loop().then(() => console.log('Status loop started...'));
 };
