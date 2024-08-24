@@ -63,7 +63,7 @@ module.exports = {
           && await getServiceInformation(token);
 
       } catch (error) {
-        await interaction.followUp({ embeds: [invalidToken()] });
+        error.response.data.message === 'Access token not valid.' && null;
       };
     }
 
