@@ -37,4 +37,20 @@ const serverStopAuditLogging = (identifier, success) => {
     .setColor(0x2ecc71);
 }
 
-module.exports = { statusInstallation, loggingInstallation, invalidToken, serverRestartAuditLogging, serverStopAuditLogging };
+const autoMonitoringInstallationUpdate = (monitoring) => {
+  return new EmbedBuilder()
+    .setDescription(`**Auto Monitoring Overview**\nEnter the service IDs to monitor. Fully stopped servers will be automatically restarted.\n\n**Additional Information**\nRemove the IDs to keep servers in an offline state. Supporting upwards of thirty concurrent services.\n\n\`\`\`x${monitoring.restarts} Gameservers Restored\nAwaiting connected gameserver...\n\n\`\`\`\n<t:${Math.floor(Date.now() / 1000)}:R>\n**[Partnership & Information](https://nitra.do/obeliskdevelopment)**\nConsider using our partnership link to purchase your gameservers, it will help fund development.`)
+    .setFooter({ text: 'Note: Contact support if issues persist.' })
+    .setImage('https://i.imgur.com/bFyqkUS.png')
+    .setColor(0x2ecc71);
+}
+
+const autoMonitoringInstallation = () => {
+  return new EmbedBuilder()
+    .setDescription(`**Auto Monitoring Overview**\nEnter the service IDs to monitor. Fully stopped servers will be automatically restarted.\n\n**Additional Information**\nRemove the IDs to keep servers in an offline state. Supporting upwards of thirty concurrent services.\n\n\`\`\`x0 Gameservers Restored\nAwaiting connected gameserver...\n\n\`\`\`\n<t:${Math.floor(Date.now() / 1000)}:R>\n**[Partnership & Information](https://nitra.do/obeliskdevelopment)**\nConsider using our partnership link to purchase your gameservers, it will help fund development.`)
+    .setFooter({ text: 'Note: Contact support if issues persist.' })
+    .setImage('https://i.imgur.com/bFyqkUS.png')
+    .setColor(0x2ecc71);
+}
+
+module.exports = { statusInstallation, loggingInstallation, invalidToken, serverRestartAuditLogging, serverStopAuditLogging, autoMonitoringInstallation, autoMonitoringInstallationUpdate };
