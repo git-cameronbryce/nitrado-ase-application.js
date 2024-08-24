@@ -55,13 +55,18 @@ module.exports = async (client) => {
     }
 
     const verification = async (token, document) => {
-      const url = 'https://oauth.nitrado.net/token';
-      const response = await axios.get(url,
-        { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
+      try {
+        const url = 'https://oauth.nitrado.net/token';
+        const response = await axios.get(url,
+          { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
 
-      const { scopes } = response.data.data.token;
-      response.status === 200 && scopes.includes('service')
-        && await getServiceInformation(token, document);
+        const { scopes } = response.data.data.token;
+        response.status === 200 && scopes.includes('service')
+          && await getServiceInformation(token, document);
+
+      } catch (error) {
+        error.response.data.message === 'Access token not valid.' && null;
+      };
     };
 
     const reference = await db.collection('ase-configuration').get();

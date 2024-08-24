@@ -105,33 +105,36 @@ module.exports = (client) => {
         // Minimal change to handle multiple tokens
         const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
         await Promise.all(Object.values(reference.nitrado).map(async (token) => verification(token)));
-        const { audits: { server } } = reference;
+        const { audits } = reference;
 
-        const primaryButton = new ButtonKit()
-          .setCustomId('ase-restart-cluster')
-          .setLabel('Restart Cluster')
-          .setStyle(ButtonStyle.Success)
-          .setDisabled(true);
+        try {
+          const primaryButton = new ButtonKit()
+            .setCustomId('ase-restart-cluster')
+            .setLabel('Restart Cluster')
+            .setStyle(ButtonStyle.Success)
+            .setDisabled(true);
 
-        const secondaryButton = new ButtonKit()
-          .setCustomId('ase-stop-cluster')
-          .setLabel('Stop Cluster')
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(true);
+          const secondaryButton = new ButtonKit()
+            .setCustomId('ase-stop-cluster')
+            .setLabel('Stop Cluster')
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(true);
 
-        const row = new ActionRowBuilder()
-          .addComponents(primaryButton, secondaryButton);
+          const row = new ActionRowBuilder()
+            .addComponents(primaryButton, secondaryButton);
 
-        const embed = new EmbedBuilder()
-          .setDescription(`**Pending Action Authorization**\nGrant permission to access your services.\nPerform a cluster-wide server action.\n\`🟢\` \`${success} Gameservers Restarting\``)
-          .setFooter({ text: 'Note: Contact support if issues persist.' })
-          .setColor(0x2ecc71);
+          const embed = new EmbedBuilder()
+            .setDescription(`**Pending Action Authorization**\nGrant permission to access your services.\nPerform a cluster-wide server action.\n\`🟢\` \`${success} Gameservers Restarting\``)
+            .setFooter({ text: 'Note: Contact support if issues persist.' })
+            .setColor(0x2ecc71);
 
-        await interaction.reply({ content: 'Data Fetch Success - Response: 200', ephemeral: true });
-        await message.edit({ embeds: [embed], components: [row] }).then(async () => {
-          const channel = await client.channels.fetch(server);
-          await channel.send({ embeds: [serverRestartAuditLogging(interaction.user.id, success)] })
-        });
+          await interaction.reply({ content: 'Data Fetch Success - Response: 200', ephemeral: true });
+          await message.edit({ embeds: [embed], components: [row] }).then(async () => {
+            const channel = await client.channels.fetch(audits.server.channel);
+            await channel.send({ embeds: [serverRestartAuditLogging(interaction.user.id, success)] })
+          });
+
+        } catch (error) { if (error.code === 10003) { null } };
       };
 
       if (interaction.customId === 'ase-stop-cluster') {
@@ -176,33 +179,36 @@ module.exports = (client) => {
         // Minimal change to handle multiple tokens
         const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
         await Promise.all(Object.values(reference.nitrado).map(async (token) => verification(token)));
-        const { audits: { server } } = reference;
+        const { audits } = reference;
 
-        const primaryButton = new ButtonKit()
-          .setCustomId('ase-restart-cluster')
-          .setLabel('Restart Cluster')
-          .setStyle(ButtonStyle.Success)
-          .setDisabled(true);
+        try {
+          const primaryButton = new ButtonKit()
+            .setCustomId('ase-restart-cluster')
+            .setLabel('Restart Cluster')
+            .setStyle(ButtonStyle.Success)
+            .setDisabled(true);
 
-        const secondaryButton = new ButtonKit()
-          .setCustomId('ase-stop-cluster')
-          .setLabel('Stop Cluster')
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(true);
+          const secondaryButton = new ButtonKit()
+            .setCustomId('ase-stop-cluster')
+            .setLabel('Stop Cluster')
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(true);
 
-        const row = new ActionRowBuilder()
-          .addComponents(primaryButton, secondaryButton);
+          const row = new ActionRowBuilder()
+            .addComponents(primaryButton, secondaryButton);
 
-        const embed = new EmbedBuilder()
-          .setDescription(`**Pending Action Authorization**\nGrant permission to access your services.\nPerform a cluster-wide server action.\n\`🟢\` \`${success} Gameservers Stopping\``)
-          .setFooter({ text: 'Note: Contact support if issues persist.' })
-          .setColor(0x2ecc71);
+          const embed = new EmbedBuilder()
+            .setDescription(`**Pending Action Authorization**\nGrant permission to access your services.\nPerform a cluster-wide server action.\n\`🟢\` \`${success} Gameservers Stopping\``)
+            .setFooter({ text: 'Note: Contact support if issues persist.' })
+            .setColor(0x2ecc71);
 
-        await interaction.reply({ content: 'Data Fetch Success - Response: 200', ephemeral: true });
-        await message.edit({ embeds: [embed], components: [row] }).then(async () => {
-          const channel = await client.channels.fetch(server);
-          await channel.send({ embeds: [serverStopAuditLogging(interaction.user.id, success)] })
-        });
+          await interaction.reply({ content: 'Data Fetch Success - Response: 200', ephemeral: true });
+          await message.edit({ embeds: [embed], components: [row] }).then(async () => {
+            const channel = await client.channels.fetch(audits.server.channel);
+            await channel.send({ embeds: [serverStopAuditLogging(interaction.user.id, success)] })
+          });
+
+        } catch (error) { if (error.code === 10003) { null } };
       };
     };
   });
