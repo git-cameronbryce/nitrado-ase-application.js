@@ -1,8 +1,8 @@
-const { invalidToken } = require('../../utilities/embeds');
+const { invalidTokenConnection } = require('../../utilities/embeds');
 const { EmbedBuilder } = require('@discordjs/builders');
 const { SlashCommandBuilder } = require('discord.js');
+const { default: axios } = require('axios');
 const { db } = require('../../script');
-const axios = require('axios');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -12,19 +12,19 @@ module.exports = {
     .addStringOption(option => option.setName('reason').setDescription('Required to submit ban action.').setRequired(true)
       .addChoices({ name: 'Breaking Rules', value: 'breaking rules' }, { name: 'Cheating', value: 'cheating' }, { name: 'Behavior', value: 'behavior' }, { name: 'Meshing', value: 'meshing' }, { name: 'Other', value: 'other reasons' })),
 
-  run: async ({ interaction }) => {
+  run: async ({ interaction, client }) => {
     await interaction.deferReply({ ephemeral: false });
     const platforms = ['arkxb'];
 
     const input = {
       username: interaction.options.getString('username'),
       reason: interaction.options.getString('reason'),
-      guild: interaction.guild.id
+      admin: interaction.user.id,
     };
 
     input.username = input.username.includes('#') ? input.username.replace('#', '') : input.username;
 
-    const getServiceInformation = async (token) => {
+    const getServiceInformation = async (token, audits) => {
       const url = 'https://api.nitrado.net/services';
       const response = await axios.get(url,
         { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
@@ -52,9 +52,21 @@ module.exports = {
 
         await interaction.followUp({ embeds: [embed] });
       });
+
+      try {
+        const channel = await client.channels.fetch(audits.player.channel);
+
+        const embed = new EmbedBuilder()
+          .setDescription(`**Gameserver Audit Logging**\nGameserver action completed.\nExecuted on \`${success}\` of \`${overall}\` servers.\n\n${input.username} was...\nRemoved for ${input.reason}.\n\n> ||<@${input.admin}>||\n\`\`\`...${token.slice(0, 12)}\`\`\``)
+          .setFooter({ text: 'Note: Contact support if issues persist.' })
+          .setColor(0x2ecc71);
+
+        await channel.send({ embeds: [embed] });
+      } catch (error) { error.code === 10003 && null };
+
     }
 
-    const verification = async (token) => {
+    const verification = async (token, audits) => {
       try {
         const url = 'https://oauth.nitrado.net/token';
         const response = await axios.get(url,
@@ -62,16 +74,15 @@ module.exports = {
 
         const { scopes } = response.data.data.token;
         response.status === 200 && scopes.includes('service')
-          && await getServiceInformation(token);
+          && await getServiceInformation(token, audits);
 
       } catch (error) {
-        error.response.data.message === 'Access token not valid.' && null;
+        error.response.data.message === 'Access token not valid.' && invalidTokenConnection();
       };
     }
 
-    // Obtain object snapshot, convert to an array. 
-    const reference = (await db.collection('ase-configuration').doc(input.guild).get()).data();
-    Object.values(reference.nitrado)?.map(async token => verification(token));
+    const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
+    Object.values(reference.nitrado)?.map(async token => verification(token, reference.audits));
   },
 
   options: {},

@@ -1,8 +1,8 @@
-const { invalidToken } = require('../../utilities/embeds');
+const { invalidTokenConnection } = require('../../utilities/embeds');
 const { EmbedBuilder } = require('@discordjs/builders');
 const { SlashCommandBuilder } = require('discord.js');
+const { default: axios } = require('axios');
 const { db } = require('../../script');
-const axios = require('axios');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,8 +16,7 @@ module.exports = {
 
     const input = {
       username: interaction.options.getString('username'),
-      reason: interaction.options.getString('reason'),
-      guild: interaction.guild.id
+      reason: interaction.options.getString('reason')
     };
 
     input.username = input.username.includes('#') ? input.username.replace('#', '') : input.username;
@@ -65,12 +64,12 @@ module.exports = {
           && await getServiceInformation(token);
 
       } catch (error) {
-        error.response.data.message === 'Access token not valid.' && null;
+        error.response.data.message === 'Access token not valid.' && invalidTokenConnection();
       };
     }
 
     // Obtain object snapshot, convert to an array. 
-    const reference = (await db.collection('ase-configuration').doc(input.guild).get()).data();
+    const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
     Object.values(reference.nitrado)?.map(async token => verification(token));
   },
 
