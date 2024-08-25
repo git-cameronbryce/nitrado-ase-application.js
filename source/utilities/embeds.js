@@ -1,9 +1,9 @@
 const { EmbedBuilder } = require("@discordjs/builders");
 
-const invalidToken = () => {
+const invalidTokenConnection = () => {
   return new EmbedBuilder()
-    .setDescription(`**Unauthorized Access**\nAn assigned token is no longer validated.\nPlease reauthorize with your provider.\n\`/ase-setup-account\`\n\n**Additional Information**\nEnsure you follow setup procedures.`)
-    .setFooter({ text: 'Tip: Contact support if there are issues.' })
+    .setDescription("**Token Invalidation Error**\nYou do not have a connected account. \nPlease reauthorize and setup again.\n`'/ase-setup-account'`\n\n**Additional Information**\nToken is invalid or not in our database.")
+    .setFooter({ text: 'Note: Contact support if issues persist.' })
     .setColor(0xe67e22);
 }
 
@@ -23,16 +23,16 @@ const loggingInstallation = () => {
     .setColor(0x2ecc71);
 }
 
-const serverRestartAuditLogging = (identifier, success) => {
+const serverRestartAuditLogging = (token, identifier) => {
   return new EmbedBuilder()
-    .setDescription(`**Gameserver Audit Logging**\nGameserver action completed.\nRestarting \`${success}\` of \`${success}\` servers.\n\n> ||<@${identifier}>||`)
+    .setDescription(`**Gameserver Audit Logging**\nGameserver action completed.\nRestarting \`1\` of \`1\` servers.\n\n> ||<@${identifier}>||\n\`\`\`...${token.slice(0, 12)}\`\`\``)
     .setFooter({ text: 'Note: Contact support if issues persist.' })
     .setColor(0x2ecc71);
 }
 
-const serverStopAuditLogging = (identifier, success) => {
+const serverStopAuditLogging = (token, identifier) => {
   return new EmbedBuilder()
-    .setDescription(`**Gameserver Audit Logging**\nGameserver action completed.\nStopping \`${success}\` of \`${success}\` servers.\n\n> ||<@${identifier}>||`)
+    .setDescription(`**Gameserver Audit Logging**\nGameserver action completed.\nStopping \`1\` of \`1\` servers.\n\n> ||<@${identifier}>||\n\`\`\`...${token.slice(0, 12)}\`\`\``)
     .setFooter({ text: 'Note: Contact support if issues persist.' })
     .setColor(0x2ecc71);
 }
@@ -53,4 +53,4 @@ const autoMonitoringInstallation = () => {
     .setColor(0x2ecc71);
 }
 
-module.exports = { statusInstallation, loggingInstallation, invalidToken, serverRestartAuditLogging, serverStopAuditLogging, autoMonitoringInstallation, autoMonitoringInstallationUpdate };
+module.exports = { statusInstallation, loggingInstallation, invalidTokenConnection, serverRestartAuditLogging, serverStopAuditLogging, autoMonitoringInstallation, autoMonitoringInstallationUpdate };
