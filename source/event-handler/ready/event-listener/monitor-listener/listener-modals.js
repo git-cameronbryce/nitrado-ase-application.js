@@ -1,10 +1,9 @@
-const { ActionRowBuilder, EmbedBuilder } = require('@discordjs/builders');
-const { loggingInstallation, statusInstallation, autoMonitoringInstallation } = require('../../../../utilities/embeds');
-const { Events, ButtonStyle, ChannelType } = require('discord.js');
-const { db } = require('../../../../script');
-const { ButtonKit } = require('commandkit');
-const axios = require('axios');
+const { invalidTokenConnection } = require('../../../../utilities/embeds');
 const { FieldValue } = require('firebase-admin/firestore');
+const { EmbedBuilder } = require('@discordjs/builders');
+const { Events, } = require('discord.js');
+const { db } = require('../../../../script');
+const { default: axios } = require('axios');
 
 
 module.exports = (client) => {
@@ -88,16 +87,6 @@ module.exports = (client) => {
             service.id === input.identifier &&
               await db.collection('ase-configuration').doc(interaction.guild.id)
                 .update({ [`monitoring.server_ids.${token}.${service.id}`]: FieldValue.delete() });
-
-
-
-
-            return
-            duplicate
-              ? compatibleGameserver = false
-              : compatibleGameserver = true, await db.collection('ase-configuration').doc(interaction.guild.id)
-                .set({ ['monitoring']: { ['server_ids']: { [token]: { [service.id]: true } } } }, { merge: true });
-
           }));
         };
 
@@ -111,7 +100,9 @@ module.exports = (client) => {
             response.status === 200 && scopes.includes('service')
               && await getServiceInformation(token);
 
-          } catch (error) { console.log(error) };
+          } catch (error) {
+            error.response.data.message === 'Access token not valid.' && invalidTokenConnection();
+          };
         };
 
         const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();

@@ -2,8 +2,7 @@ const { ActionRowBuilder } = require('@discordjs/builders');
 const { ButtonStyle, EmbedBuilder } = require('discord.js');
 const { db } = require('../../../script');
 const { ButtonKit } = require('commandkit');
-const axios = require('axios');
-const { FieldValue } = require('firebase-admin/firestore');
+const { default: axios } = require('axios');
 
 module.exports = async (client) => {
   const loop = async () => {
@@ -114,11 +113,11 @@ module.exports = async (client) => {
           const embed = new EmbedBuilder()
             .setDescription(`${output}**Cluster Player Count**\n \`🌐\` \`(${current.value}/${maximum.value})\`\n\n<t:${Math.floor(Date.now() / 1000)}:R>\n**[Partnership & Information](https://nitra.do/obeliskdevelopment)**\nConsider using our partnership link to purchase your gameservers, it will help fund development.`)
             .setFooter({ text: 'Note: Contact support if issues persist.' })
-            .setImage('https://i.imgur.com/2ZIHUgx.png')
+            .setImage('https://i.imgur.com/bFyqkUS.png')
             .setColor(0x2ecc71);
 
           await message.edit({ embeds: [embed], components: [row] });
-        } catch (error) { if (error.code === 10003) { null } };
+        } catch (error) { error.code === 10003 && null };
       })
     );
 

@@ -1,9 +1,5 @@
 const { ModalBuilder, ActionRowBuilder, TextInputBuilder } = require('@discordjs/builders');
-const { Events, TextInputStyle, ButtonStyle, EmbedBuilder, ChannelType } = require('discord.js');
-const { db } = require('../../../../script');
-const { default: axios } = require('axios');
-
-const platforms = ['arkxb'];
+const { Events, TextInputStyle } = require('discord.js');
 
 module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {

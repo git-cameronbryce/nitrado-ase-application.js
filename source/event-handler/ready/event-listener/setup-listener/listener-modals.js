@@ -3,7 +3,7 @@ const { loggingInstallation, statusInstallation, autoMonitoringInstallation } = 
 const { Events, ButtonStyle, ChannelType } = require('discord.js');
 const { db } = require('../../../../script');
 const { ButtonKit } = require('commandkit');
-const axios = require('axios');
+const { default: axios } = require('axios');
 
 module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {
@@ -62,29 +62,6 @@ module.exports = (client) => {
           .then(async () => {
             await interaction.followUp({ content: "Proceeding with installation...", ephemeral: true });
 
-            const statisticsCategory = await interaction.guild.channels.create({
-              name: `AS:E Statistics Overview`,
-              type: ChannelType.GuildCategory,
-            });
-
-            const statisticsPlayers = await interaction.guild.channels.create({
-              name: 'Active: 0 Players',
-              type: ChannelType.GuildVoice,
-              parent: statisticsCategory
-            });
-
-            const statisticsActive = await interaction.guild.channels.create({
-              name: 'Active: 0 Servers',
-              type: ChannelType.GuildVoice,
-              parent: statisticsCategory
-            });
-
-            const statisticsOutage = await interaction.guild.channels.create({
-              name: 'Outage: 0 Servers',
-              type: ChannelType.GuildVoice,
-              parent: statisticsCategory
-            });
-
             const statusCategory = await interaction.guild.channels.create({
               name: `AS:E Status Overview`,
               type: ChannelType.GuildCategory,
@@ -106,29 +83,6 @@ module.exports = (client) => {
               name: '🔗│𝗖ommands',
               type: ChannelType.GuildText,
               parent: statusCategory
-            });
-
-            const gameProtectionCategory = await interaction.guild.channels.create({
-              name: `AS:E Game Detection`,
-              type: ChannelType.GuildCategory,
-            });
-
-            const adminProtectionChannel = await interaction.guild.channels.create({
-              name: '🔐│𝗔dmin-𝗣rotection',
-              type: ChannelType.GuildText,
-              parent: gameProtectionCategory
-            });
-
-            const dupeProtectionChannel = await interaction.guild.channels.create({
-              name: '🔐│𝗗upe-𝗣rotection',
-              type: ChannelType.GuildText,
-              parent: gameProtectionCategory
-            });
-
-            const altProtectionChannel = await interaction.guild.channels.create({
-              name: '🔐│𝗔lt-𝗣rotection',
-              type: ChannelType.GuildText,
-              parent: gameProtectionCategory
             });
 
             const auditLoggingCategory = await interaction.guild.channels.create({
@@ -203,7 +157,7 @@ module.exports = (client) => {
               .addComponents(autoMonitoringPrimaryButton, autoMonitoringSecondaryyButton);
 
             const autoMonitoringMessage = await autoMonitoringChannel.send({ embeds: [autoMonitoringInstallation()], components: [autoMonitoringButtonRow] });
-            // await autoMonitoringMessage.send({ content: '*Important: This is a destructive feature. When you add your "IDs" to the database, the bot will automatically bring the server back online whenever it goes offline. It will continue to do so, even if you stop them yourself. Be sure to remove the "IDs" if you want the server to stay offline. Wait for the embed to update before taking any actions.*' });
+            await autoMonitoringChannel.send({ content: '*Important: This is a destructive feature. When you add your "IDs" to the database, the bot will automatically bring the server back online whenever it goes offline. It will continue to do so, even if you stop them yourself. Be sure to remove the "IDs" if you want the server to stay offline. Wait for the embed to update before taking any actions.*' });
             const statusMessage = await statusChannel.send({ embeds: [statusInstallation()] });
 
             const loggingPrimaryButton = new ButtonKit()
@@ -232,10 +186,6 @@ module.exports = (client) => {
               status: {
                 channel: statusChannel.id,
                 message: statusMessage.id
-              },
-              gamesave: {
-                channel: restoreGamesavesChannel.id,
-                message: restoreGamesavesMessage.id
               },
               audits: {
                 monitoring: { channel: monitoringAuditChannel.id },

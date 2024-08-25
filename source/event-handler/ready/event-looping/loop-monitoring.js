@@ -1,10 +1,8 @@
-const { ActionRowBuilder } = require('@discordjs/builders');
-const { ButtonStyle, EmbedBuilder } = require('discord.js');
-const { db } = require('../../../script');
-const { ButtonKit } = require('commandkit');
-const axios = require('axios');
 const { autoMonitoringInstallationUpdate } = require('../../../utilities/embeds');
 const { FieldValue } = require('firebase-admin/firestore');
+const { EmbedBuilder } = require('discord.js');
+const { db } = require('../../../script');
+const { default: axios } = require('axios');
 
 module.exports = async (client) => {
   const loop = async () => {
@@ -24,13 +22,13 @@ module.exports = async (client) => {
         const channel = await client.channels.fetch(audits.monitoring.channel);
 
         const embed = new EmbedBuilder()
-          .setDescription(`**Monitor Audit Logging**\nDowned server has been detected.\nRestoring and bringing back online.\nService ID #: ${service.id}\n\n> ||<@987467099855282276>||`)
+          .setDescription(`**Gameserver Audit Logging**\nDowned server has been detected.\nRestoring and bringing back online.\nService ID #: ${service.id}\n\n> ||<@987467099855282276>||\n\`\`\`...${token.slice(0, 12)}\`\`\``)
           .setFooter({ text: 'Note: Contact support if issues persist.' })
           .setColor(0x2ecc71);
 
         await channel.send({ embeds: [embed] });
 
-      } catch (error) { if (error.code === 10003) { null } };
+      } catch (error) { error.code === 10003 && null };
     };
 
     const getGameserverInformation = async (token, service, audits, document) => {
@@ -99,7 +97,7 @@ module.exports = async (client) => {
             .setColor(0x2ecc71);
 
           await message.edit({ embeds: [embed] });
-        } catch (error) { if (error.code === 10003) { null } };
+        } catch (error) { error.code === 10003 && null };
       })
     );
 

@@ -1,9 +1,9 @@
+const { serverRestartAuditLogging, serverStopAuditLogging, invalidTokenConnection } = require('../../../../utilities/embeds');
 const { EmbedBuilder, ActionRowBuilder } = require('@discordjs/builders');
 const { Events, ButtonStyle } = require('discord.js');
 const { db } = require('../../../../script');
-const axios = require('axios');
+const { default: axios } = require('axios');
 const { ButtonKit } = require('commandkit');
-const { serverRestartAuditLogging, serverStopAuditLogging } = require('../../../../utilities/embeds');
 
 module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {
@@ -35,7 +35,9 @@ module.exports = (client) => {
             response.status === 200 && scopes.includes('service')
               && await getServiceInformation(token);
 
-          } catch (error) { console.log(error) };
+          } catch (error) {
+            error.response.data.message === 'Access token not valid.' && invalidTokenConnection();
+          };
         };
 
         // Obtain object snapshot, convert to an array. 
@@ -66,6 +68,7 @@ module.exports = (client) => {
       if (interaction.customId === 'ase-restart-cluster') {
 
         let success = 0;
+        let compatibleToken = '';
         const message = await interaction.message;
         const getServiceInformation = async (token) => {
           const url = 'https://api.nitrado.net/services';
@@ -82,7 +85,7 @@ module.exports = (client) => {
                 headers: { 'Authorization': token, 'Content-Type': 'application/json' },
               });
 
-              response.status === 200 && success++;
+              response.status === 200 && (compatibleToken = token), success++;
             } catch (error) { null };
           })
           );
@@ -131,15 +134,16 @@ module.exports = (client) => {
           await interaction.reply({ content: 'Data Fetch Success - Response: 200', ephemeral: true });
           await message.edit({ embeds: [embed], components: [row] }).then(async () => {
             const channel = await client.channels.fetch(audits.server.channel);
-            await channel.send({ embeds: [serverRestartAuditLogging(interaction.user.id, success)] })
+            await channel.send({ embeds: [serverRestartAuditLogging(compatibleToken, interaction.user.id)] })
           });
 
-        } catch (error) { if (error.code === 10003) { null } };
+        } catch (error) { error.code === 10003 && null };
       };
 
       if (interaction.customId === 'ase-stop-cluster') {
 
         let success = 0;
+        let compatibleToken = '';
         const message = await interaction.message;
         const getServiceInformation = async (token) => {
           const url = 'https://api.nitrado.net/services';
@@ -156,7 +160,7 @@ module.exports = (client) => {
                 headers: { 'Authorization': token, 'Content-Type': 'application/json' },
               });
 
-              response.status === 200 && success++;
+              response.status === 200 && (compatibleToken = token), success++;
             } catch (error) { null };
           })
           );
@@ -178,7 +182,7 @@ module.exports = (client) => {
 
         // Minimal change to handle multiple tokens
         const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
-        await Promise.all(Object.values(reference.nitrado).map(async (token) => verification(token)));
+        await Promise.all(Object.values(reference.nitrado).map(async token => verification(token)));
         const { audits } = reference;
 
         try {
@@ -205,10 +209,11 @@ module.exports = (client) => {
           await interaction.reply({ content: 'Data Fetch Success - Response: 200', ephemeral: true });
           await message.edit({ embeds: [embed], components: [row] }).then(async () => {
             const channel = await client.channels.fetch(audits.server.channel);
-            await channel.send({ embeds: [serverStopAuditLogging(interaction.user.id, success)] })
+            await channel.send({ embeds: [serverStopAuditLogging(compatibleToken, interaction.user.id)] })
           });
 
-        } catch (error) { if (error.code === 10003) { null } };
+        } catch (error) { error.code === 10003 && null };
+
       };
     };
   });

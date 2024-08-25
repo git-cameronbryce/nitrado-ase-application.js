@@ -1,5 +1,5 @@
-const { ModalBuilder, ActionRowBuilder, TextInputBuilder } = require('@discordjs/builders');
-const { Events, TextInputStyle, ButtonStyle, EmbedBuilder, ChannelType } = require('discord.js');
+const { invalidTokenConnection } = require('../../../../utilities/embeds');
+const { Events, EmbedBuilder, ChannelType } = require('discord.js');
 const { db } = require('../../../../script');
 const { default: axios } = require('axios');
 
@@ -32,13 +32,19 @@ module.exports = (client) => {
         };
 
         const verification = async (token) => {
-          const url = 'https://oauth.nitrado.net/token';
-          const response = await axios.get(url,
-            { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
 
-          const { scopes } = response.data.data.token;
-          response.status === 200 && scopes.includes('service')
-            && await getServiceInformation(token);
+          try {
+            const url = 'https://oauth.nitrado.net/token';
+            const response = await axios.get(url,
+              { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
+
+            const { scopes } = response.data.data.token;
+            response.status === 200 && scopes.includes('service')
+              && await getServiceInformation(token);
+
+          } catch (error) {
+            error.response.data.message === 'Access token not valid.' && invalidTokenConnection();
+          };
         };
 
         // Obtain object snapshot, convert to an array. 
