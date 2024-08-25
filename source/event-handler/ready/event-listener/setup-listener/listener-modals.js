@@ -9,7 +9,7 @@ module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isModalSubmit()) {
       if (interaction.customId === 'ase-modal-setup') {
-        await interaction.deferReply({ ephemeral: false })
+        await interaction.deferReply({ ephemeral: true })
 
         const input = { guild: interaction.guild.id };
 
@@ -21,7 +21,7 @@ module.exports = (client) => {
           const responses = await Promise.all([
             requiredToken ? axios.get(url, { headers: { 'Authorization': requiredToken } }) : Promise.resolve(null),
             optionalToken ? axios.get(url, { headers: { 'Authorization': optionalToken } }) : Promise.resolve(null)
-          ]);
+          ]).catch(error => error.response.data.message === 'Access token not valid.' && null)
 
           const [requiredResponse, optionalResponse] = responses;
 
@@ -34,9 +34,9 @@ module.exports = (client) => {
             await db.collection('ase-configuration').doc(input.guild)
               .set({ ['nitrado']: { requiredToken: requiredToken } },
                 { merge: true });
-          }
+          };
 
-        } catch (error) { return await interaction.followUp({ content: 'Token Verification: Error' }), console.log(error) };
+        } catch (error) { return await interaction.followUp({ content: 'An invalid token was prompted.' }) };
 
         const installation = new ButtonKit()
           .setCustomId('ase-setup-token')
@@ -88,12 +88,6 @@ module.exports = (client) => {
             const statusCategory = await interaction.guild.channels.create({
               name: `AS:E Status Overview`,
               type: ChannelType.GuildCategory,
-            });
-
-            const manageGamesavesChannel = await interaction.guild.channels.create({
-              name: '🔗│𝗠anage-𝗚amesaves',
-              type: ChannelType.GuildText,
-              parent: statusCategory
             });
 
             const autoMonitoringChannel = await interaction.guild.channels.create({
@@ -209,6 +203,7 @@ module.exports = (client) => {
               .addComponents(autoMonitoringPrimaryButton, autoMonitoringSecondaryyButton);
 
             const autoMonitoringMessage = await autoMonitoringChannel.send({ embeds: [autoMonitoringInstallation()], components: [autoMonitoringButtonRow] });
+            // await autoMonitoringMessage.send({ content: '*Important: This is a destructive feature. When you add your "IDs" to the database, the bot will automatically bring the server back online whenever it goes offline. It will continue to do so, even if you stop them yourself. Be sure to remove the "IDs" if you want the server to stay offline. Wait for the embed to update before taking any actions.*' });
             const statusMessage = await statusChannel.send({ embeds: [statusInstallation()] });
 
             const loggingPrimaryButton = new ButtonKit()
@@ -237,6 +232,10 @@ module.exports = (client) => {
               status: {
                 channel: statusChannel.id,
                 message: statusMessage.id
+              },
+              gamesave: {
+                channel: restoreGamesavesChannel.id,
+                message: restoreGamesavesMessage.id
               },
               audits: {
                 monitoring: { channel: monitoringAuditChannel.id },
