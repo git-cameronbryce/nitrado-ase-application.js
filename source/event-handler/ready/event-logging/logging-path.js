@@ -1,6 +1,5 @@
-const { ButtonStyle, EmbedBuilder } = require('discord.js');
 const { db } = require('../../../script');
-const axios = require('axios');
+const { default: axios } = require('axios');
 
 const { adminExtractionLogic } = require('./logging-logic/module-admin');
 const { chatExtractionLogic } = require('./logging-logic/module-chat');
