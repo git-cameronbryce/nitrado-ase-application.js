@@ -2,10 +2,10 @@ const { default: axios } = require("axios");
 const platforms = ['arkxb'];
 
 /**
- * Fetches and filters the services from the Nitrado API based on platform compatibility and active status.
- * 
- * @param {string} token - The authorization token required for the API call.
- * @returns {Promise<number[]>} - A promise that resolves to an array of service IDs that are compatible and active.
+ * Fetches and filters services bases on their status and platform.
+ * If the status and platform are as needed, ids are pushed to the array.
+ * @param {string} token - bearer authorization token, required for all requests.
+ * @returns {Promise<number[]>} - promise array with numbers, includes all service ids. 
  */
 
 const getServices = async (token) => {
