@@ -7,6 +7,19 @@ const invalidTokenConnection = () => {
     .setColor(0xe67e22);
 }
 
+const invalidServiceConnection = () => {
+  return new EmbedBuilder()
+    .setDescription("**Invalid Service Detected**\nCreation failed due to incorrect args.\n\n**Additional Information**\nUnable to authorize with stored token.\nYou must provide a valid identifier.")
+    .setFooter({ text: 'Note: Contact support if issues persist.' })
+    .setColor(0xe67e22);
+}
+const invalidDuplicationConnection = () => {
+  return new EmbedBuilder()
+    .setDescription(`**Duplicate Entry Detected**\nCreation failed due to an existing setup.\nThread already stored in database.\n\n**Additional Information**\nOverwriting does not remove the thread.\nYou must delete the thread afterward.`)
+    .setFooter({ text: 'Note: Contact support if issues persist.' })
+    .setColor(0xe67e22);
+}
+
 const statusInstallation = () => {
   return new EmbedBuilder()
     .setDescription("**Server Status Information**\nStatus page installing. Every few minutes, this page will update. Displaying accurate and updated server information. \n\n(e.g. Server state, Player data, etc.)\n\n**[Partnership Commission](https://nitra.do/obeliskdevelopment)**\nConsider using our partnership link to purchase your servers, we will recieve partial commission!")
@@ -23,16 +36,16 @@ const loggingInstallation = () => {
     .setColor(0x2ecc71);
 }
 
-const serverRestartAuditLogging = (token, identifier) => {
+const serverRestartAuditLogging = (token, identifier, success) => {
   return new EmbedBuilder()
-    .setDescription(`**Gameserver Audit Logging**\nGameserver action completed.\nRestarting \`1\` of \`1\` servers.\n\n> ||<@${identifier}>||\n\`\`\`...${token.slice(0, 12)}\`\`\``)
+    .setDescription(`**Gameserver Audit Logging**\nGameserver action completed.\nRestarting \`${success}\` of \`${success}\` servers.\n\n> ||<@${identifier}>||\n\`\`\`...${token.slice(0, 12)}\`\`\``)
     .setFooter({ text: 'Note: Contact support if issues persist.' })
     .setColor(0x2ecc71);
 }
 
-const serverStopAuditLogging = (token, identifier) => {
+const serverStopAuditLogging = (token, identifier, success) => {
   return new EmbedBuilder()
-    .setDescription(`**Gameserver Audit Logging**\nGameserver action completed.\nStopping \`1\` of \`1\` servers.\n\n> ||<@${identifier}>||\n\`\`\`...${token.slice(0, 12)}\`\`\``)
+    .setDescription(`**Gameserver Audit Logging**\nGameserver action completed.\nStopping \`${success}\` of \`${success}\` servers.\n\n> ||<@${identifier}>||\n\`\`\`...${token.slice(0, 12)}\`\`\``)
     .setFooter({ text: 'Note: Contact support if issues persist.' })
     .setColor(0x2ecc71);
 }
@@ -53,4 +66,12 @@ const autoMonitoringInstallation = () => {
     .setColor(0x2ecc71);
 }
 
-module.exports = { statusInstallation, loggingInstallation, invalidTokenConnection, serverRestartAuditLogging, serverStopAuditLogging, autoMonitoringInstallation, autoMonitoringInstallationUpdate };
+const playerManagementSuccess = () => {
+  return new EmbedBuilder()
+    .setDescription(`**Ark Survival Evolved**\n**Game Command Success**\nGameserver action completed.\nExecuted on \`${success}\` of \`${services.length}\` servers.\n\`\`\`...${token.slice(0, 12)}\`\`\``)
+    .setFooter({ text: 'Note: Contact support if issues persist.' })
+    .setThumbnail('https://i.imgur.com/CzGfRzv.png')
+    .setColor(0x2ecc71);
+}
+
+module.exports = { playerManagementSuccess, statusInstallation, loggingInstallation, invalidTokenConnection, serverRestartAuditLogging, serverStopAuditLogging, autoMonitoringInstallation, autoMonitoringInstallationUpdate, invalidServiceConnection, invalidDuplicationConnection };
