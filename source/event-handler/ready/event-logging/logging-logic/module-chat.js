@@ -33,7 +33,7 @@ const chatExtractionLogic = async (document, service, response, client) => {
         try {
           const channel = await client.channels.fetch(entry[1]);
           const embed = new EmbedBuilder()
-            .setColor('#2ecc71')
+            .setColor(0x2ecc71)
             .setFooter({ text: `Tip: Contact support if there are issues.` })
             .setDescription(unique);
 
@@ -45,6 +45,6 @@ const chatExtractionLogic = async (document, service, response, client) => {
 };
 
 // Clear the Set every hour
-setInterval(() => data.clear(), 3600000);
+setInterval(() => data.clear(), 7200000);
 
 module.exports = { chatExtractionLogic };

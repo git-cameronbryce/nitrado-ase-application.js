@@ -4,13 +4,16 @@ const { db } = require('../../../script');
 const { ButtonKit } = require('commandkit');
 const { default: axios } = require('axios');
 
+const rateLimit = require('axios-rate-limit');
+const http = rateLimit(axios.create(), { maxRequests: 5, perMilliseconds: 750 });
+
 module.exports = async (client) => {
   const loop = async () => {
     const platforms = ['arkxb'];
 
     const getServiceInformation = async (token, servers, current, maximum, counter) => {
       const url = 'https://api.nitrado.net/services';
-      const response = await axios.get(url, {
+      const response = await http.get(url, {
         headers: { 'Authorization': token, 'Content-Type': 'application/json' },
       });
 
@@ -20,53 +23,54 @@ module.exports = async (client) => {
 
           const { suspend_date } = service;
 
-          const url = `https://api.nitrado.net/services/${service.id}/gameservers`;
-          const response = await axios.get(url, {
-            headers: { 'Authorization': token, 'Content-Type': 'application/json' },
-          });
+          try {
+            const url = `https://api.nitrado.net/services/${service.id}/gameservers`;
+            const response = await http.get(url, {
+              headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+            });
 
-          const { query } = response.data.data.gameserver;
+            const { query } = response.data.data.gameserver;
 
-          if (query?.player_current) current.value += query.player_current;
-          if (query?.player_max) maximum.value += query.player_max;
+            if (query?.player_current) current.value += query.player_current;
+            if (query?.player_max) maximum.value += query.player_max;
 
-          if (counter.value >= 25) return;
-          let serverOutput = '';
-          switch (response.data.data.gameserver.status) {
-            case 'started':
-              serverOutput = `\`🟢\` \`Service Online\`\n${query?.server_name ? query?.server_name.slice(0, 40) : 'Data Fetch Error - API Outage'}\nPlayer Count: \`${query?.player_current ? query?.player_current : 0}/${query?.player_max ? query?.player_max : 0}\`\nID: ||${service.id}||\n\n**Server Runtime**\n<t:${new Date(suspend_date).getTime() / 1000}:f>\n\n`;
-              counter.value++;
-              break;
-            case 'restarting':
-              serverOutput = `\`🟠\` \`Service Restarting\`\n${query?.server_name ? query?.server_name.slice(0, 40) : 'Data Fetch Error - API Outage'}\nPlayer Count: \`${query?.player_current ? query?.player_current : 0}/${query?.player_max ? query?.player_max : 0}\`\nID: ||${service.id}||\n\n**Server Runtime**\n<t:${new Date(suspend_date).getTime() / 1000}:f>\n\n`;
-              counter.value++;
-              break;
-            case 'updating':
-              serverOutput = `\`🟠\` \`Service Updating\`\n${query?.server_name ? query?.server_name.slice(0, 40) : 'Data Fetch Error - API Outage'}\nPlayer Count: \`${query?.player_current ? query?.player_current : 0}/${query?.player_max ? query?.player_max : 0}\`\nID: ||${service.id}||\n\n**Server Runtime**\n<t:${new Date(suspend_date).getTime() / 1000}:f>\n\n`;
-              counter.value++;
-              break;
-            case 'stopping':
-              serverOutput = `\`🔴\` \`Service Stopping\`\n${query?.server_name ? query?.server_name.slice(0, 40) : 'Data Fetch Error - API Outage'}\nPlayer Count: \`${query?.player_current ? query?.player_current : 0}/${query?.player_max ? query?.player_max : 0}\`\nID: ||${service.id}||\n\n**Server Runtime**\n<t:${new Date(suspend_date).getTime() / 1000}:f>\n\n`;
-              counter.value++;
-              break;
-            case 'stopped':
-              serverOutput = `\`🔴\` \`Service Stopped\`\n${query?.server_name ? query?.server_name.slice(0, 40) : 'Data Fetch Error - API Outage'}\nPlayer Count: \`${query?.player_current ? query?.player_current : 0}/${query?.player_max ? query?.player_max : 0}\`\nID: ||${service.id}||\n\n**Server Runtime**\n<t:${new Date(suspend_date).getTime() / 1000}:f>\n\n`;
-              counter.value++;
-              break;
-            default:
-              break;
-          }
+            if (counter.value >= 25) return;
+            let serverOutput = '';
+            switch (response.data.data.gameserver.status) {
+              case 'started':
+                serverOutput = `\`🟢\` \`Service Online\`\n${query?.server_name ? query?.server_name.slice(0, 55) : 'Data Fetch Error - API Outage'}\nPlayer Count: \`${query?.player_current ? query?.player_current : 0}/${query?.player_max ? query?.player_max : 0}\`\nID: ||${service.id}||\n\n**Server Runtime**\n<t:${new Date(suspend_date).getTime() / 1000}:f>\n\n`;
+                counter.value++;
+                break;
+              case 'restarting':
+                serverOutput = `\`🟠\` \`Service Restarting\`\n${query?.server_name ? query?.server_name.slice(0, 55) : 'Data Fetch Error - API Outage'}\nPlayer Count: \`${query?.player_current ? query?.player_current : 0}/${query?.player_max ? query?.player_max : 0}\`\nID: ||${service.id}||\n\n**Server Runtime**\n<t:${new Date(suspend_date).getTime() / 1000}:f>\n\n`;
+                counter.value++;
+                break;
+              case 'updating':
+                serverOutput = `\`🟠\` \`Service Updating\`\n${query?.server_name ? query?.server_name.slice(0, 55) : 'Data Fetch Error - API Outage'}\nPlayer Count: \`${query?.player_current ? query?.player_current : 0}/${query?.player_max ? query?.player_max : 0}\`\nID: ||${service.id}||\n\n**Server Runtime**\n<t:${new Date(suspend_date).getTime() / 1000}:f>\n\n`;
+                counter.value++;
+                break;
+              case 'stopping':
+                serverOutput = `\`🔴\` \`Service Stopping\`\n${query?.server_name ? query?.server_name.slice(0, 55) : 'Data Fetch Error - API Outage'}\nPlayer Count: \`${query?.player_current ? query?.player_current : 0}/${query?.player_max ? query?.player_max : 0}\`\nID: ||${service.id}||\n\n**Server Runtime**\n<t:${new Date(suspend_date).getTime() / 1000}:f>\n\n`;
+                counter.value++;
+                break;
+              case 'stopped':
+                serverOutput = `\`🔴\` \`Service Stopped\`\n${query?.server_name ? query?.server_name.slice(0, 55) : 'Data Fetch Error - API Outage'}\nPlayer Count: \`${query?.player_current ? query?.player_current : 0}/${query?.player_max ? query?.player_max : 0}\`\nID: ||${service.id}||\n\n**Server Runtime**\n<t:${new Date(suspend_date).getTime() / 1000}:f>\n\n`;
+                counter.value++;
+                break;
+              default:
+                break;
+            }
 
-          servers.push({ output: serverOutput, playerCurrent: query?.player_current || 0 });
+            servers.push({ output: serverOutput, playerCurrent: query?.player_current || 0 });
+          } catch (error) { return null };
         })
       );
     };
 
-    const verification = async (token, servers, current, maximum, counter, document) => {
-
+    const verification = async (token, servers, current, maximum, counter) => {
       try {
         const url = 'https://oauth.nitrado.net/token';
-        const response = await axios.get(url, {
+        const response = await http.get(url, {
           headers: { 'Authorization': token, 'Content-Type': 'application/json' },
         });
 
@@ -74,9 +78,7 @@ module.exports = async (client) => {
         if (response.status === 200 && scopes.includes('service')) {
           await getServiceInformation(token, servers, current, maximum, counter);
         }
-      } catch (error) {
-        error.response.data.message === 'Access token not valid.' && null;
-      };
+      } catch (error) { return null };
     };
 
     const reference = await db.collection('ase-configuration').get();
@@ -121,7 +123,7 @@ module.exports = async (client) => {
       })
     );
 
-    setTimeout(loop, 60000);
+    setTimeout(loop, 10000);
   };
   loop().then(() => console.log('Status loop started...'));
 };
