@@ -1,9 +1,10 @@
-const { serverRestartAuditLogging, serverStopAuditLogging, invalidTokenConnection } = require('../../../../utilities/embeds');
+const { createServerRestartAuditEmbed, createServerStopAuditEmbed } = require('../../../../services/utilities/embed-audits/embeds');
 const { EmbedBuilder, ActionRowBuilder } = require('@discordjs/builders');
 const { Events, ButtonStyle } = require('discord.js');
 const { db } = require('../../../../script');
 const { default: axios } = require('axios');
 const { ButtonKit } = require('commandkit');
+const { createRoleMissingEmbed } = require('../../../../services/utilities/embed-players/embeds');
 
 module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {
@@ -11,6 +12,15 @@ module.exports = (client) => {
       const platforms = ['arkxb'];
 
       if (interaction.customId === 'ase-cluster-command') {
+
+        let hasRole = false;
+        await interaction.guild.roles.fetch().then(async roles => {
+          const role = roles.find(role => role.name === 'AS:E Obelisk Permission');
+          if (interaction.member.roles.cache.has(role.id)) hasRole = true;
+        });
+
+        if (!hasRole) return await interaction.reply({ embeds: [createRoleMissingEmbed()], ephemeral: true });
+
         await interaction.deferReply({ ephemeral: false });
 
         let compatiblePlatform = 0;
@@ -25,24 +35,8 @@ module.exports = (client) => {
           }));
         };
 
-        const verification = async (token) => {
-          try {
-            const url = 'https://oauth.nitrado.net/token';
-            const response = await axios.get(url,
-              { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
-
-            const { scopes } = response.data.data.token;
-            response.status === 200 && scopes.includes('service')
-              && await getServiceInformation(token);
-
-          } catch (error) {
-            error.response.data.message === 'Access token not valid.' && invalidTokenConnection();
-          };
-        };
-
-        // Obtain object snapshot, convert to an array. 
         const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
-        await Promise.all(Object.values(reference.nitrado)?.map(async token => verification(token)));
+        await Promise.all(Object.values(reference.nitrado)?.map(async token => getServiceInformation(token)));
 
         const primaryButton = new ButtonKit()
           .setCustomId('ase-restart-cluster')
@@ -91,23 +85,8 @@ module.exports = (client) => {
           );
         };
 
-        const verification = async (token) => {
-          try {
-            const url = 'https://oauth.nitrado.net/token';
-            const response = await axios.get(url, {
-              headers: { 'Authorization': token, 'Content-Type': 'application/json' },
-            });
-
-            const { scopes } = response.data.data.token;
-            if (response.status === 200 && scopes.includes('service')) {
-              await getServiceInformation(token);
-            }
-          } catch (error) { null };
-        };
-
-        // Minimal change to handle multiple tokens
         const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
-        await Promise.all(Object.values(reference.nitrado).map(async (token) => verification(token)));
+        await Promise.all(Object.values(reference.nitrado).map(async token => getServiceInformation(token)));
         const { audits } = reference;
 
         try {
@@ -134,7 +113,7 @@ module.exports = (client) => {
           await interaction.reply({ content: 'Data Fetch Success - Response: 200', ephemeral: true });
           await message.edit({ embeds: [embed], components: [row] }).then(async () => {
             const channel = await client.channels.fetch(audits.server.channel);
-            await channel.send({ embeds: [serverRestartAuditLogging(compatibleToken, interaction.user.id)] })
+            await channel.send({ embeds: [createServerRestartAuditEmbed(compatibleToken, interaction.user.id, success)] })
           });
 
         } catch (error) { error.code === 10003 && null };
@@ -166,23 +145,8 @@ module.exports = (client) => {
           );
         };
 
-        const verification = async (token) => {
-          try {
-            const url = 'https://oauth.nitrado.net/token';
-            const response = await axios.get(url, {
-              headers: { 'Authorization': token, 'Content-Type': 'application/json' },
-            });
-
-            const { scopes } = response.data.data.token;
-            if (response.status === 200 && scopes.includes('service')) {
-              await getServiceInformation(token);
-            }
-          } catch (error) { null };
-        };
-
-        // Minimal change to handle multiple tokens
         const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
-        await Promise.all(Object.values(reference.nitrado).map(async token => verification(token)));
+        await Promise.all(Object.values(reference.nitrado).map(async token => getServiceInformation(token)));
         const { audits } = reference;
 
         try {
@@ -209,11 +173,10 @@ module.exports = (client) => {
           await interaction.reply({ content: 'Data Fetch Success - Response: 200', ephemeral: true });
           await message.edit({ embeds: [embed], components: [row] }).then(async () => {
             const channel = await client.channels.fetch(audits.server.channel);
-            await channel.send({ embeds: [serverStopAuditLogging(compatibleToken, interaction.user.id)] })
+            await channel.send({ embeds: [createServerStopAuditEmbed(compatibleToken, interaction.user.id, success)] })
           });
 
         } catch (error) { error.code === 10003 && null };
-
       };
     };
   });

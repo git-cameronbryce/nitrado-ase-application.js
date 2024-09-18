@@ -1,8 +1,12 @@
-const { EmbedBuilder } = require('@discordjs/builders');
+
+const { createPlayerManagementSuccessEmbed, createRoleMissingEmbed } = require('../../services/utilities/embed-players/embeds');
+const { getServices } = require('../../services/requests/getServices');
 const { SlashCommandBuilder } = require('discord.js');
 const { default: axios } = require('axios');
 const { db } = require('../../script');
-const { getServices } = require('../../services/requests/getServices');
+
+const rateLimit = require('axios-rate-limit');
+const http = rateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 250 });
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -11,8 +15,16 @@ module.exports = {
     .addStringOption(option => option.setName('username').setDescription('Selected action will be performed on given tag.').setRequired(true)),
 
   run: async ({ interaction }) => {
-    await interaction.deferReply({ ephemeral: false });
 
+    let hasRole = false;
+    await interaction.guild.roles.fetch().then(async roles => {
+      const role = roles.find(role => role.name === 'AS:E Obelisk Permission');
+      if (interaction.member.roles.cache.has(role.id)) hasRole = true;
+    });
+
+    if (!hasRole) return await interaction.reply({ embeds: [createRoleMissingEmbed()], ephemeral: true });
+
+    await interaction.deferReply();
     const input = { username: interaction.options.getString('username') };
 
     input.username = input.username.includes('#') ? input.username.replace('#', '') : input.username;
@@ -25,7 +37,7 @@ module.exports = {
       await Promise.all(services.map(async identifiers => {
         try {
           const url = `https://api.nitrado.net/services/${identifiers}/gameservers/games/banlist`;
-          const response = await axios.delete(url, {
+          const response = await http.delete(url, {
             headers: { 'Authorization': token, 'Content-Type': 'application/json' }, data: { identifier: input.username }
           });
 
@@ -34,13 +46,7 @@ module.exports = {
         } catch (error) { error.response.data.message === "Can't remove the user from the banlist." && success++ };
       }));
 
-      const embed = new EmbedBuilder()
-        .setDescription(`**Ark Survival Evolved**\n**Game Command Success**\nGameserver action completed.\nExecuted on \`${success}\` of \`${services.length}\` servers.\n\`\`\`...${token.slice(0, 12)}\`\`\``)
-        .setFooter({ text: 'Note: Contact support if issues persist.' })
-        .setThumbnail('https://i.imgur.com/CzGfRzv.png')
-        .setColor(0x2ecc71);
-
-      await interaction.followUp({ embeds: [embed] });
+      await interaction.followUp({ embeds: [createPlayerManagementSuccessEmbed(success, services, token)] });
     });
   },
 };

@@ -1,15 +1,20 @@
+const { createLoggingSetupEmbed, createServerStatusEmbed, createDonationEmbed } = require('../../../../services/utilities/embed-events/embeds');
 const { ActionRowBuilder, EmbedBuilder } = require('@discordjs/builders');
-const { loggingInstallation, statusInstallation, autoMonitoringInstallation } = require('../../../../utilities/embeds');
 const { Events, ButtonStyle, ChannelType } = require('discord.js');
 const { db } = require('../../../../script');
 const { ButtonKit } = require('commandkit');
 const { default: axios } = require('axios');
+const { FieldValue } = require('firebase-admin/firestore');
 
 module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isModalSubmit()) {
       if (interaction.customId === 'ase-modal-setup') {
         await interaction.deferReply({ ephemeral: true })
+
+        if (!interaction.guild.features.includes('COMMUNITY')) {
+          return await interaction.followUp({ content: 'Setup failure, ensure you set your server to community.' })
+        };
 
         const input = { guild: interaction.guild.id };
 
@@ -36,7 +41,7 @@ module.exports = (client) => {
                 { merge: true });
           };
 
-        } catch (error) { return await interaction.followUp({ content: 'An invalid token was prompted.' }) };
+        } catch (error) { return await interaction.followUp({ content: 'Setup failure, ensure you set the correct token.' }) };
 
         const installation = new ButtonKit()
           .setCustomId('ase-setup-token')
@@ -62,27 +67,43 @@ module.exports = (client) => {
           .then(async () => {
             await interaction.followUp({ content: "Proceeding with installation...", ephemeral: true });
 
+            const roles = await interaction.guild.roles.fetch();
+            const action = roles.map(async role => role.name === 'AS:E Obelisk Permission' ? await role.delete() : null);
+            try { await Promise.all(action) } catch (error) { return await interaction.followUp({ content: 'In your settings, move the bot role higher.' }) };
+
+            await interaction.guild.roles.create({
+              name: 'AS:E Obelisk Permission',
+              color: '#ffffff',
+            }).then(() => console.log('Role created...'));
+
+            const donationCategory = await interaction.guild.channels.create({
+              name: `AS:E Donation Overview`,
+              type: ChannelType.GuildCategory,
+            });
+
+            const donationChannel = await interaction.guild.channels.create({
+              name: '🍻│𝗗onation-𝗦upport',
+              type: ChannelType.GuildText,
+              parent: donationCategory
+            });
+
             const statusCategory = await interaction.guild.channels.create({
               name: `AS:E Status Overview`,
               type: ChannelType.GuildCategory,
             });
 
-            const autoMonitoringChannel = await interaction.guild.channels.create({
-              name: '🔗│𝗔uto-𝗠onitoring',
-              type: ChannelType.GuildText,
-              parent: statusCategory
-            });
-
             const statusChannel = await interaction.guild.channels.create({
               name: '🔗│𝗦erver-𝗦tatus',
               type: ChannelType.GuildText,
-              parent: statusCategory
+              parent: statusCategory,
+              topic: 'Channel designed for organization, status updates generate here.'
             });
 
             const commandsChannel = await interaction.guild.channels.create({
               name: '🔗│𝗖ommands',
               type: ChannelType.GuildText,
-              parent: statusCategory
+              parent: statusCategory,
+              topic: 'Channel designed for organization, execute slash commands here.'
             });
 
             const auditLoggingCategory = await interaction.guild.channels.create({
@@ -90,22 +111,18 @@ module.exports = (client) => {
               type: ChannelType.GuildCategory,
             });
 
-            const monitoringAuditChannel = await interaction.guild.channels.create({
-              name: '📄│𝗠onitor-𝗔udits',
-              type: ChannelType.GuildText,
-              parent: auditLoggingCategory
-            });
-
             const playerAuditChannel = await interaction.guild.channels.create({
               name: '📄│𝗣layer-𝗔udits',
               type: ChannelType.GuildText,
-              parent: auditLoggingCategory
+              parent: auditLoggingCategory,
+              topic: 'Audit logging channel, commands will be sent here for archive purposes.'
             });
 
             const serverAuditChannel = await interaction.guild.channels.create({
               name: '📄│𝗦erver-𝗔udits',
               type: ChannelType.GuildText,
-              parent: auditLoggingCategory
+              parent: auditLoggingCategory,
+              topic: 'Audit logging channel, commands will be sent here for archive purposes.'
             });
 
             const gameLoggingCategory = await interaction.guild.channels.create({
@@ -116,49 +133,34 @@ module.exports = (client) => {
             const onlineForumChannel = await interaction.guild.channels.create({
               name: '📑│𝗢nline-𝗟ogging',
               type: ChannelType.GuildForum,
-              parent: gameLoggingCategory
+              parent: gameLoggingCategory,
+              topic: 'Awaiting thread installation, will display your logging data.'
             });
 
             const adminForumChannel = await interaction.guild.channels.create({
               name: '📑│𝗔dmin-𝗟ogging',
               type: ChannelType.GuildForum,
-              parent: gameLoggingCategory
+              parent: gameLoggingCategory,
+              topic: 'Awaiting thread installation, will display your logging data.'
             });
 
             const chatForumChannel = await interaction.guild.channels.create({
               name: '📑│𝗖hat-𝗟ogging',
               type: ChannelType.GuildForum,
-              parent: gameLoggingCategory
-            });
-
-            const joinForumChannel = await interaction.guild.channels.create({
-              name: '📑│𝗝oin-𝗟ogging',
-              type: ChannelType.GuildForum,
-              parent: gameLoggingCategory
+              parent: gameLoggingCategory,
+              topic: 'Awaiting thread installation, will display your logging data.'
             });
 
             const installation = await interaction.guild.channels.create({
               name: '📑│𝗜nstallation',
               type: ChannelType.GuildText,
-              parent: gameLoggingCategory
+              parent: gameLoggingCategory,
+              topic: 'Channel designed for organization, setup your logging here.'
             });
 
-            const autoMonitoringPrimaryButton = new ButtonKit()
-              .setCustomId('ase-connect-service')
-              .setLabel('Connect Service')
-              .setStyle(ButtonStyle.Success);
+            const statusMessage = await statusChannel.send({ embeds: [createServerStatusEmbed()] });
 
-            const autoMonitoringSecondaryyButton = new ButtonKit()
-              .setCustomId('ase-remove-service')
-              .setLabel('Remove Service')
-              .setStyle(ButtonStyle.Secondary);
-
-            const autoMonitoringButtonRow = new ActionRowBuilder()
-              .addComponents(autoMonitoringPrimaryButton, autoMonitoringSecondaryyButton);
-
-            const autoMonitoringMessage = await autoMonitoringChannel.send({ embeds: [autoMonitoringInstallation()], components: [autoMonitoringButtonRow] });
-            await autoMonitoringChannel.send({ content: '*Important: This is a destructive feature. When you add your "IDs" to the database, the bot will automatically bring the server back online whenever it goes offline. It will continue to do so, even if you stop them yourself. Be sure to remove the "IDs" if you want the server to stay offline. Wait for the embed to update before taking any actions.*' });
-            const statusMessage = await statusChannel.send({ embeds: [statusInstallation()] });
+            await donationChannel.send({ embeds: [createDonationEmbed()] });
 
             const loggingPrimaryButton = new ButtonKit()
               .setCustomId('ase-automatic-setup')
@@ -175,29 +177,25 @@ module.exports = (client) => {
             const loggingButtonRow = new ActionRowBuilder()
               .addComponents(loggingPrimaryButton, loggingSecondaryButton);
 
-            await installation.send({ embeds: [loggingInstallation()], components: [loggingButtonRow] });
+            await installation.send({ embeds: [createLoggingSetupEmbed()], components: [loggingButtonRow] });
 
             const data = {
-              monitoring: {
-                channel: autoMonitoringChannel.id,
-                message: autoMonitoringMessage.id,
-                restarts: 0
-              },
               status: {
                 channel: statusChannel.id,
                 message: statusMessage.id
               },
               audits: {
-                monitoring: { channel: monitoringAuditChannel.id },
                 player: { channel: playerAuditChannel.id },
                 server: { channel: serverAuditChannel.id }
               },
               forum: {
                 online: onlineForumChannel.id,
                 admin: adminForumChannel.id,
-                chat: chatForumChannel.id,
-                join: joinForumChannel.id,
+                chat: chatForumChannel.id
               },
+              online: FieldValue.delete(),
+              admin: FieldValue.delete(),
+              chat: FieldValue.delete(),
             }
             await db.collection('ase-configuration').doc(input.guild)
               .set(data, { merge: true });
