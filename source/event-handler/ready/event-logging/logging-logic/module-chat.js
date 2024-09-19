@@ -41,10 +41,9 @@ const chatExtractionLogic = async (document, service, response, client) => {
         } catch (error) { null };
       }
     });
-  } catch (error) { console.log(error) };
+  } catch (error) { null };
 };
 
-// Clear the Set every hour
 setInterval(() => data.clear(), 7200000);
 
 module.exports = { chatExtractionLogic };

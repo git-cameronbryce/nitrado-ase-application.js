@@ -1,21 +1,5 @@
 const { EmbedBuilder } = require("@discordjs/builders");
 
-const createAutoMonitoringUpdateEmbed = (monitoring) => {
-  return new EmbedBuilder()
-    .setDescription(`**Auto Monitoring Overview**\nInput service IDs for monitoring. Offline servers will be automatically restarted. Remove IDs to keep servers in offline state.\n\n\`\`\`x${monitoring.restarts} Gameservers Restored\nAwaiting connected gameserver...\n\n\`\`\`\n<t:${Math.floor(Date.now() / 1000)}:R>\n**[Partnership & Information](https://nitra.do/obeliskdevelopment)**\nConsider using our partnership link to purchase your gameservers, it will help fund development.`)
-    .setFooter({ text: 'Note: Contact support if issues persist.' })
-    .setImage('https://i.imgur.com/bFyqkUS.png')
-    .setColor(0x2ecc71);
-}
-
-const createAutoMonitoringSetupEmbed = () => {
-  return new EmbedBuilder()
-    .setDescription(`**Auto Monitoring Overview**\nInput service IDs for monitoring. Offline servers will be automatically restarted. Remove IDs to keep servers in offline state.\n\n\`\`\`x0 Gameservers Restored\nAwaiting connected gameserver...\n\n\`\`\`\n<t:${Math.floor(Date.now() / 1000)}:R>\n**[Partnership & Information](https://nitra.do/obeliskdevelopment)**\nConsider using our partnership link to purchase your gameservers, it will help fund development.`)
-    .setFooter({ text: 'Note: Contact support if issues persist.' })
-    .setImage('https://i.imgur.com/bFyqkUS.png')
-    .setColor(0x2ecc71);
-}
-
 const createInvalidServiceEmbed = () => {
   return new EmbedBuilder()
     .setDescription("**Invalid Service Detected**\nCreation failed due to incorrect args.\n\n**Additional Information**\nUnable to authorize with stored token.\nYou must provide a valid identifier.")
@@ -62,8 +46,6 @@ const createDonationEmbed = () => {
 }
 
 module.exports = {
-  createAutoMonitoringUpdateEmbed,
-  createAutoMonitoringSetupEmbed,
   createInvalidServiceEmbed,
   createDuplicateEntryEmbed,
   createServerStatusEmbed,

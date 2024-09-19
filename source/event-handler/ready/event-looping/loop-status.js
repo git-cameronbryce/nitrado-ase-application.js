@@ -5,7 +5,7 @@ const { ButtonKit } = require('commandkit');
 const { default: axios } = require('axios');
 
 const rateLimit = require('axios-rate-limit');
-const http = rateLimit(axios.create(), { maxRequests: 5, perMilliseconds: 750 });
+const http = rateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 1000 });
 
 module.exports = async (client) => {
   const loop = async () => {

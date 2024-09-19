@@ -4,7 +4,7 @@ const { default: axios } = require('axios');
 const { getServices } = require('../../../services/requests/getServices');
 
 const rateLimit = require('axios-rate-limit');
-const http = rateLimit(axios.create(), { maxRequests: 5, perMilliseconds: 1500 });
+const http = rateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 1000 });
 
 module.exports = async (client) => {
   const loop = async () => {
@@ -45,12 +45,12 @@ module.exports = async (client) => {
               }
             });
 
-          } catch (error) { console.log(error) };
+          } catch (error) { null };
         }));
       })
     })
     setTimeout(loop, 60000);
   }
-  loop().then(() => console.log('Loop started:'));
+  loop().then(() => console.log('Logging loop started:'));
 };
 

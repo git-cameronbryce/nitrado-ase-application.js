@@ -41,10 +41,9 @@ const adminExtractionLogic = async (document, service, response, client) => {
       }
     });
 
-  } catch (error) { console.log('Admin Extraction Error') }
+  } catch (error) { null };
 };
 
-// Clear the Set every hour
 setInterval(() => data.clear(), 7200000);
 
 module.exports = { adminExtractionLogic };

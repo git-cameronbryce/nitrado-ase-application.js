@@ -45,7 +45,6 @@ module.exports = (client) => {
 
         let duplicate = false;
         Object.entries(admin || {}).forEach(async ([key, value]) => {
-          console.log(key), console.log(input.identifier);
 
           if (key == input.identifier) {
             duplicate = true, await interaction.followUp({ embeds: [createDuplicateLoggingEmbed()] });
@@ -91,7 +90,7 @@ module.exports = (client) => {
           };
 
           await db.collection('ase-configuration').doc(interaction.guild.id).set(data, { merge: true })
-            .then(() => { console.log('Database Finished:') });
+            .then(() => { console.log('Database Logging Finished:') });
 
           await interaction.followUp({ embeds: [createPlayerLoggingEmbed()] })
         });

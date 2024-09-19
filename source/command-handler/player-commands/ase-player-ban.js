@@ -7,7 +7,7 @@ const { default: axios } = require('axios');
 const { db } = require('../../script');
 
 const rateLimit = require('axios-rate-limit');
-const http = rateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 250 });
+const http = rateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 100 });
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -47,12 +47,15 @@ module.exports = {
       await Promise.all(services.map(async identifiers => {
         try {
           const url = `https://api.nitrado.net/services/${identifiers}/gameservers/games/banlist`;
-          const response = await http.post(url, { identifier: input.username },
+          const response = await axios.post(url, { identifier: input.username },
             { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
+
 
           response.status === 200 && success++;
 
-        } catch (error) { error.response.data.message === "Can't add the user to the banlist." && success++ }
+        } catch (error) {
+          error.response.data.message === "Can't add the user to the banlist." && success++;
+        }
       }));
 
       await interaction.followUp({ embeds: [createPlayerManagementSuccessEmbed(success, services, token)] });
@@ -62,7 +65,7 @@ module.exports = {
         const channel = await client.channels.fetch(player.channel);
         await channel.send({ embeds: [createPlayerManagementAuditEmbed(input, success, services, token)] });
 
-      } catch (error) { console.log(error) };
+      } catch (error) { error.code === 10003 && null };
     });
   },
 };

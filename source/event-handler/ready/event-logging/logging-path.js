@@ -1,12 +1,8 @@
 const { db } = require('../../../script');
 const { default: axios } = require('axios');
 
-/*
-This setting sends 5 requests every 3 seconds, ensuring all 1000 servers are updated within the 10-minute window.
-*/
-
 const rateLimit = require('axios-rate-limit');
-const http = rateLimit(axios.create(), { maxRequests: 5, perMilliseconds: 3000 });
+const http = rateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 1000 });
 
 const { adminExtractionLogic } = require('./logging-logic/module-admin');
 const { chatExtractionLogic } = require('./logging-logic/module-chat');
@@ -62,6 +58,6 @@ module.exports = async (client) => {
     })
     setTimeout(loop, 60000);
   }
-  loop().then(() => console.log('Loop started:'));
+  loop().then(() => console.log('Logging loop started:'));
 };
 

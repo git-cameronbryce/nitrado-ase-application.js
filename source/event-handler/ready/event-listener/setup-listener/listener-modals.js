@@ -20,6 +20,9 @@ module.exports = (client) => {
 
         const requiredToken = interaction.fields.getTextInputValue('ase-nitrado-token-required');
         const optionalToken = interaction.fields.getTextInputValue('ase-nitrado-token-optional');
+
+        if (requiredToken === optionalToken) return await interaction.followUp({ content: 'Setup failure, ensure you do not have duplicate token inputs.' })
+
         const url = 'https://oauth.nitrado.net/token';
 
         try {
@@ -74,7 +77,7 @@ module.exports = (client) => {
             await interaction.guild.roles.create({
               name: 'AS:E Obelisk Permission',
               color: '#ffffff',
-            }).then(() => console.log('Role created...'));
+            });
 
             const donationCategory = await interaction.guild.channels.create({
               name: `AS:E Donation Overview`,
