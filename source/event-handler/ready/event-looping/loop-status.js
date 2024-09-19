@@ -9,7 +9,7 @@ const http = rateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 1000 }
 
 module.exports = async (client) => {
   const loop = async () => {
-    const platforms = ['arkxb'];
+    const platforms = ['arkxb', 'arkps', 'arkse'];
 
     const getServiceInformation = async (token, servers, current, maximum, counter) => {
       const url = 'https://api.nitrado.net/services';

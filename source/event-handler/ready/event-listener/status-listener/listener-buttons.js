@@ -9,7 +9,7 @@ const { ButtonKit } = require('commandkit');
 module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isButton()) {
-      const platforms = ['arkxb'];
+      const platforms = ['arkxb', 'arkps', 'arkse'];
 
       if (interaction.customId === 'ase-cluster-command') {
 

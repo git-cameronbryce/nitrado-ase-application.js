@@ -8,7 +8,7 @@ const { adminExtractionLogic } = require('./logging-logic/module-admin');
 const { chatExtractionLogic } = require('./logging-logic/module-chat');
 
 module.exports = async (client) => {
-  const platforms = ['arkxb'];
+  const platforms = ['arkxb', 'arkps', 'arkse'];
 
   const loop = async () => {
     const getExtractedFilePath = async (token, document, service, { url }) => {

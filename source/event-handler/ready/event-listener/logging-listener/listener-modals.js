@@ -9,7 +9,7 @@ const rateLimit = require('axios-rate-limit');
 
 const http = rateLimit(axios.create(), { maxRequests: 5, perMilliseconds: 1500 });
 
-const platforms = ['arkxb'];
+const platforms = ['arkxb', 'arkps', 'arkse'];
 
 module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {

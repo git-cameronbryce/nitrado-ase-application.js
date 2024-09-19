@@ -1,5 +1,5 @@
 const { default: axios } = require("axios");
-const platforms = ['arkxb'];
+const platforms = ['arkxb', 'arkps', 'arkse'];
 
 const rateLimit = require('axios-rate-limit');
 const http = rateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 1000 });
