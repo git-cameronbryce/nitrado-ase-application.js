@@ -14,13 +14,6 @@ const createDuplicateEntryEmbed = () => {
     .setColor(0xe67e22);
 }
 
-const createInvalidTokenEmbed = () => {
-  return new EmbedBuilder()
-    .setDescription("**Token Invalidation Error**\nYou do not have a connected account. \nPlease reauthorize and setup again.\n`'/ase-setup-account'`\n\n**Additional Information**\nToken is invalid or not in our database.")
-    .setFooter({ text: 'Note: Contact support if issues persist.' })
-    .setColor(0xe67e22);
-}
-
 const createServerStatusEmbed = () => {
   return new EmbedBuilder()
     .setDescription("**Server Status Information**\nStatus page installing. Every few minutes, this page will update. Displaying accurate and updated server information. \n\n(e.g. Server state, Player data, etc.)\n\n**[Partnership Commission](https://nitra.do/obeliskdevelopment)**\nConsider using our partnership link to purchase your servers, we will receive partial commission!")
@@ -50,6 +43,5 @@ module.exports = {
   createDuplicateEntryEmbed,
   createServerStatusEmbed,
   createLoggingSetupEmbed,
-  createInvalidTokenEmbed,
   createDonationEmbed
 };

@@ -1,10 +1,12 @@
+const { createDuplicateLoggingEmbed, createPlayerLoggingEmbed } = require('../../../../services/utilities/embed-logging/embeds');
 const { createInvalidServiceEmbed } = require('../../../../services/utilities/embed-events/embeds');
+const { createInvalidTokenEmbed } = require('../../../../services/utilities/embed-players/embeds');
 const { Events, EmbedBuilder, ChannelType } = require('discord.js');
 const { db } = require('../../../../script');
 const { default: axios } = require('axios');
 
 const rateLimit = require('axios-rate-limit');
-const { createDuplicateLoggingEmbed, createPlayerLoggingEmbed } = require('../../../../services/utilities/embed-logging/embeds');
+
 const http = rateLimit(axios.create(), { maxRequests: 5, perMilliseconds: 1500 });
 
 const platforms = ['arkxb'];
@@ -37,6 +39,8 @@ module.exports = (client) => {
 
 
         const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
+        if (!reference) return await interaction.followUp({ embeds: [createInvalidTokenEmbed()] });
+
         await Promise.all(Object.values(reference.nitrado)?.map(async token => {
           await getServiceInformation(token);
         }));

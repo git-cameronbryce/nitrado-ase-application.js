@@ -1,10 +1,10 @@
 const { createServerRestartAuditEmbed, createServerStopAuditEmbed } = require('../../../../services/utilities/embed-audits/embeds');
+const { createRoleMissingEmbed, createInvalidTokenEmbed } = require('../../../../services/utilities/embed-players/embeds');
 const { EmbedBuilder, ActionRowBuilder } = require('@discordjs/builders');
 const { Events, ButtonStyle } = require('discord.js');
 const { db } = require('../../../../script');
 const { default: axios } = require('axios');
 const { ButtonKit } = require('commandkit');
-const { createRoleMissingEmbed } = require('../../../../services/utilities/embed-players/embeds');
 
 module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {
@@ -36,6 +36,8 @@ module.exports = (client) => {
         };
 
         const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
+        if (!reference) return await interaction.followUp({ embeds: [createInvalidTokenEmbed()] });
+
         await Promise.all(Object.values(reference.nitrado)?.map(async token => getServiceInformation(token)));
 
         const primaryButton = new ButtonKit()
@@ -86,6 +88,8 @@ module.exports = (client) => {
         };
 
         const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
+        if (!reference) return await interaction.followUp({ embeds: [createInvalidTokenEmbed()] });
+
         await Promise.all(Object.values(reference.nitrado).map(async token => getServiceInformation(token)));
         const { audits } = reference;
 
@@ -146,6 +150,8 @@ module.exports = (client) => {
         };
 
         const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
+        if (!reference) return await interaction.followUp({ embeds: [createInvalidTokenEmbed()] });
+
         await Promise.all(Object.values(reference.nitrado).map(async token => getServiceInformation(token)));
         const { audits } = reference;
 

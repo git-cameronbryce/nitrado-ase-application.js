@@ -1,5 +1,5 @@
 
-const { createPlayerManagementSuccessEmbed, createRoleMissingEmbed } = require('../../services/utilities/embed-players/embeds');
+const { createPlayerManagementSuccessEmbed, createRoleMissingEmbed, createInvalidTokenEmbed } = require('../../services/utilities/embed-players/embeds');
 const { getServices } = require('../../services/requests/getServices');
 const { SlashCommandBuilder } = require('discord.js');
 const { default: axios } = require('axios');
@@ -30,6 +30,7 @@ module.exports = {
     input.username = input.username.includes('#') ? input.username.replace('#', '') : input.username;
 
     const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
+    if (!reference) return await interaction.followUp({ embeds: [createInvalidTokenEmbed()] });
     Object.values(reference.nitrado)?.map(async token => {
       const services = await getServices(token);
 

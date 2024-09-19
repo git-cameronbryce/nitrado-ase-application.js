@@ -1,13 +1,13 @@
 
+const { createPlayerManagementSuccessEmbed, createRoleMissingEmbed, createInvalidTokenEmbed } = require('../../services/utilities/embed-players/embeds');
 const { createPlayerManagementAuditEmbed } = require('../../services/utilities/embed-audits/embeds');
-const { createPlayerManagementSuccessEmbed, createRoleMissingEmbed } = require('../../services/utilities/embed-players/embeds');
 const { getServices } = require('../../services/requests/getServices');
 const { SlashCommandBuilder } = require('discord.js');
 const { default: axios } = require('axios');
 const { db } = require('../../script');
 
 const rateLimit = require('axios-rate-limit');
-const http = rateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 100 });
+const http = rateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 250 });
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -38,6 +38,7 @@ module.exports = {
     input.username = input.username.includes('#') ? input.username.replace('#', '') : input.username;
 
     const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
+    if (!reference) return await interaction.followUp({ embeds: [createInvalidTokenEmbed()] });
 
     const { audits: { player } } = reference;
     Object.values(reference.nitrado)?.map(async token => {
@@ -47,7 +48,7 @@ module.exports = {
       await Promise.all(services.map(async identifiers => {
         try {
           const url = `https://api.nitrado.net/services/${identifiers}/gameservers/games/banlist`;
-          const response = await axios.post(url, { identifier: input.username },
+          const response = await http.post(url, { identifier: input.username },
             { headers: { 'Authorization': token, 'Content-Type': 'application/json' } });
 
 

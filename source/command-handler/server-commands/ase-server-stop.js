@@ -1,6 +1,6 @@
 const { createServerManagementFailureEmbed, createServerManagementSuccessEmbed } = require('../../services/utilities/embed-servers/embeds');
+const { createRoleMissingEmbed, createInvalidTokenEmbed } = require('../../services/utilities/embed-players/embeds');
 const { createServerStopAuditEmbed } = require('../../services/utilities/embed-audits/embeds');
-const { createRoleMissingEmbed } = require('../../services/utilities/embed-players/embeds');
 const { getServices } = require('../../services/requests/getServices');
 const { SlashCommandBuilder } = require('discord.js');
 const { default: axios } = require('axios');
@@ -30,6 +30,7 @@ module.exports = {
     };
 
     const reference = (await db.collection('ase-configuration').doc(interaction.guild.id).get()).data();
+    if (!reference) return await interaction.followUp({ embeds: [createInvalidTokenEmbed()] });
 
     let compatiblePlatform = false;
 

@@ -1,7 +1,6 @@
+const { createRoleMissingEmbed } = require('../../../../services/utilities/embed-players/embeds');
 const { ModalBuilder, ActionRowBuilder, TextInputBuilder } = require('discord.js');
 const { Events, TextInputStyle, Embed } = require('discord.js');
-const { default: axios } = require('axios');
-const { createRoleMissingEmbed } = require('../../../../services/utilities/embed-players/embeds');
 
 module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {

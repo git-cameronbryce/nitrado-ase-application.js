@@ -1,7 +1,7 @@
-const { ButtonStyle, EmbedBuilder } = require('discord.js');
+const { getServices } = require('../../../services/requests/getServices');
+const { EmbedBuilder } = require('discord.js');
 const { db } = require('../../../script');
 const { default: axios } = require('axios');
-const { getServices } = require('../../../services/requests/getServices');
 
 const rateLimit = require('axios-rate-limit');
 const http = rateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 1000 });
